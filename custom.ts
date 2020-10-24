@@ -53,10 +53,9 @@ namespace IoT_gateway {
         doTelemetry = b
     }
 
-    //% block="gatewayOrchestrator $b"
-    //% b.shadow="toggleOnOff"
-    export function gatewayOrchestrator (b:boolean): void {
-        doGatewayOrchestrator = b
+    //% block
+    export function gatewayOrchestrator (): void {
+        doGatewayOrchestrator = true
         if (doGatewayOrchestrator) {
             //debug("start orchestration ...")
             //debug("activeRadioRequest = " + activeRadioRequest)
