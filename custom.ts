@@ -8,7 +8,7 @@
  * Custom blocks
  */
 //% weight=100 color=#0fbc11 icon=""
-namespace IoT_gateway {
+namespace NodeRed {
     //////////////////
     // Start IoT_gateway
     //////////////////
@@ -20,9 +20,6 @@ namespace IoT_gateway {
     const init_telemetry = "{\"topic\":\"telemetry\"}"
     const init_property = "{\"topic\":\"property\"}"
     const init_log = "{\"topic\":\"device_log\"}"
-    let cmd = ""
-    let temp1: string[] = []
-    let temp0: string[] = []
     let serialRead = ""
     let index = 0
     let sn = 0
@@ -39,7 +36,7 @@ namespace IoT_gateway {
     let activeRadioRequest = false
     radio.setTransmitPower(7)
     radio.setGroup(101)
-    radio.setTransmitSerialNumber(false)
+    radio.setTransmitSerialNumber(true)
     microbit_ID = 0
     //add this gateway microbit a index  0
     addMicrobit(control.deviceSerialNumber())
@@ -356,15 +353,15 @@ namespace IoT_gateway {
             serialRead = serial.readUntil(serial.delimiters(Delimiters.NewLine))
             debug("serial.onDataReceived() > serialRead ="+ serialRead)
             if (!(serialRead.isEmpty())) {
-                temp0 = serialRead.split(":")
-                if (temp0.length == 1) {
+                const t0 = serialRead.split(":")
+                if (t0.length == 1) {
                     radio.sendString(serialRead)
                     debug("serial.onDataReceived() > radio.sendString("+ serialRead+")")
                 }
-                if (temp0.length == 2) {
-                    temp1 = temp0[0].split(",")
-                    for (let i = 0; i <= temp1.length - 1; i++) {
-                        cmd = "" + temp1[i] + ":" + temp0[1]
+                if (t0.length == 2) {
+                    const t1 = t0[0].split(",")
+                    for (let i = 0; i <= t1.length - 1; i++) {
+                        const cmd = "" + t1[i] + ":" + t0[1]
                         radio.sendString(cmd)
                         debug("serial.onDataReceived() > radio.sendString("+cmd+")")
                         basic.pause(20)
@@ -394,26 +391,194 @@ namespace IoT_gateway {
     ///////////////////
     // Start IoT Client
     ///////////////////
- //   let temp0: string[] = []
+    let radioGroup = 101
+    let identity = -1 // TODO define identity
+    let doTelemetry = true
+    let doProperty = true
+    let doD2C = true
+    let doDebug = true
+    let propString: string[] = []
+    let propValue: number[] = []
+
+    radio.setGroup(101)
+    radio.setTransmitSerialNumber(true)
+    radio.setTransmitPower(7)
+
+    //%block="submit property | name = $p | value = $v"
+    export function addProperty(p: string, v:number) {
+        const index = propString.indexOf(p)
+        if ( index < 0) {
+            propString.push(p)
+            propValue.push(v)
+        } else {
+            propString[index] = p
+            propValue[index] = v
+        }    
+    }
+
+    //%block="telemetry $b"
+    //% b.shadow="toggleOnOff"
+    export function sendTelemetry(b: boolean) {
+        doTelemetry = b
+    }
+
+    //%block="property $b"
+    //% b.shadow="toggleOnOff"
+    export function sendProperty(b: boolean) {
+        doProperty = b
+    }
+
+    //%block="device2cloud $b"
+    //% b.shadow="toggleOnOff"
+    export function sendD2C(b: boolean) {
+        doTelemetry = b
+    }
+
+    //%block="debug $b"
+    //% b.shadow="toggleOnOff"
+    export function sendDebug(b: boolean) {
+        doTelemetry = b
+    }
+
+    //% block
+    export function registerDevice () {
+        basic.clearScreen()
+        if (identity < 0) {
+            while (identity < 0) {
+                radio.sendValue("register", 0)
+                led.toggle(2, 2)
+                basic.pause(200)
+            }
+        } else {
+            basic.showString("already registered")
+        }
+        basic.clearScreen()
+        who()
+    }
+    //% block
+    export function unregisterDevice () {
+        basic.clearScreen()
+        if (identity >= 0) {
+            radio.sendValue("del", control.deviceSerialNumber())
+            led.toggle(2, 2)
+            basic.pause(1000)
+        } else {
+            basic.showString("already deleted")
+        }
+    }
+
+    function telemetry () {
+        // send telemetry to the cloud
+        if (doTelemetry) {
+            radio.sendValue("id", identity) //TODO: define identity
+            basic.pause(delay)
+            radio.sendValue("sn", 0)
+            basic.pause(delay)
+            radio.sendValue("time", 0)
+            basic.pause(delay)
+            radio.sendValue("packet", 0)
+            basic.pause(delay)
+            radio.sendValue("signal", 0)
+            basic.pause(delay)
+            radio.sendValue("temp", input.temperature())
+            basic.pause(delay)
+            radio.sendValue("light", input.lightLevel())
+            basic.pause(delay)
+            radio.sendValue("accX", input.acceleration(Dimension.X))
+            basic.pause(delay)
+            radio.sendValue("accY", input.acceleration(Dimension.Y))
+            basic.pause(delay)
+            radio.sendValue("accZ", input.acceleration(Dimension.Z))
+            basic.pause(delay)
+            radio.sendValue("comp", 1)
+            basic.pause(delay)
+            radio.sendValue("dP0", pins.digitalReadPin(DigitalPin.P0))
+            basic.pause(delay)
+            radio.sendValue("dP1", pins.digitalReadPin(DigitalPin.P1))
+            basic.pause(delay)
+            radio.sendValue("dP2", pins.digitalReadPin(DigitalPin.P2))
+            basic.pause(delay)
+            radio.sendValue("aP0", pins.analogReadPin(AnalogPin.P0))
+            basic.pause(delay)
+            radio.sendValue("aP1", pins.analogReadPin(AnalogPin.P1))
+            basic.pause(delay)
+            radio.sendValue("aP2", pins.analogReadPin(AnalogPin.P2))
+            basic.pause(delay)
+        }    
+    }
+
+    function eom () {
+        radio.sendValue("eom", 1)
+        basic.pause(delay)
+    }
+
+    function device2cloud () {
+        // send device property to the cloud
+        if (doD2C) {
+            radio.sendValue("device2cloud", 1)
+            basic.pause(delay)
+        }
+    }
+
+    function property () {
+    // send device property to the cloud
+    if (doProperty) {
+        while (propString.length > 0) {
+            const s=propString.pop()
+            const v=propValue.pop()
+            radio.sendValue(s, v)
+            basic.pause(delay)
+            }
+        }
+    }
+
+    function debug () {
+        // send debug info to the cloud
+        if (doDebug) {
+            radio.sendValue("d:id", identity)
+            basic.pause(delay)
+        }
+    }
+
+    radio.onReceivedString(function (receivedString) {
+        serialRead = receivedString
+        doCommands = true
+        cloud2device()
+    })
+
+    radio.onReceivedValue(function (name, value) {
+        if (identity >= 0) {
+            if (name == "token" && value == control.deviceSerialNumber()) {
+                telemetry()
+                property()
+                device2cloud()
+                debug()
+                eom()
+            }
+        }
+    })
+
+
+   
+    /////////////////
+    // End IoT Client
+    /////////////////
+
+
+    /////////////////////
+    // Start IoT Commands
+    /////////////////////
+     //   let temp0: string[] = []
     let str = ""
     let reportedproperties = ""
-    let p3 = ""
-    let p2 = ""
-    let p1 = ""
  //   let cmd = ""
-    let temp3: string[] = []
-    let temp2: string[] = []
-//    let temp1: string[] = []
     let iconnumber = 0
 //    let delay = 0
     let doCommands = false
 //    let serialRead = ""
     let strip: neopixel.Strip = null
-    export let identity = 0
+    let identity = 0
     identity = -1
-    radio.setGroup(101)
-    radio.setTransmitSerialNumber(true)
-    radio.setTransmitPower(7)
     strip = neopixel.create(DigitalPin.P1, 10, NeoPixelMode.RGB)
     strip.clear()
     strip.show()
@@ -424,39 +589,39 @@ namespace IoT_gateway {
     function cloud2device () {
         // process cloud commands
         if (!(serialRead.isEmpty())) {
-            temp0 = serialRead.split(":")
-            if (temp0.length == 1) {
+            const t0:string[] = serialRead.split(":")
+            if (t0.length == 1) {
                 // received a generic command
-                temp1 = serialRead.split("(")
-                temp2 = temp1[1].split(")")
-                temp3 = temp2[0].split(",")
-                cmd = convertToText(temp1[0])
-                p1 = temp3[0]
-                p2 = temp3[1]
-                p3 = temp3[2]
+                const t1:string[] = serialRead.split("(")
+                const t2:string[] = t1[1].split(")")
+                const t3:string[] = t2[0].split(",")
+                const cmd = convertToText(t1[0])
+                const p1 = t3[0]
+                const p2 = t3[1]
+                const p3 = t3[2]
                 serialRead = ""
                 basic.showString("" + (p1))
-                invokeCommands()
+                invokeCommands(cmd, p1,p2,p3)
             }
-            if (temp0.length == 2) {
-                if (parseFloat(temp0[0]) == identity) {
+            if (t0.length == 2) {
+                if (parseFloat(t0[0]) == identity) {
                     // received a specific command for this device
-                    temp1 = temp0[1].split("(")
-                    temp2 = temp1[1].split(")")
-                    temp3 = temp2[0].split(",")
-                    cmd = convertToText(temp1[0])
-                    p1 = temp3[0]
-                    p2 = temp3[1]
-                    p3 = temp3[2]
+                    const t1 = t0[1].split("(")
+                    const t2 = t1[1].split(")")
+                    const t3 = t2[0].split(",")
+                    const cmd = convertToText(t1[0])
+                    const p1 = t3[0]
+                    const p2 = t3[1]
+                    const p3 = t3[2]
                     serialRead = ""
-                    invokeCommands()
+                    invokeCommands(cmd, p1,p2,p3)
                 }
             }
         }
     }
 
  
-    function invokeCommands () {
+    function invokeCommands (cmd:string, p1:string, p2:string, p3:string) {
         if (doCommands) {
             if (cmd == "setId") {
                 setIdentity(parseFloat(p1), parseFloat(p2))
@@ -483,30 +648,20 @@ namespace IoT_gateway {
                 setBrightness(parseFloat(p1))
             }
             if (cmd == "servo") {
-                servo(parseFloat(p1))
+                setServo(parseFloat(p1))
             }
             if (cmd == "digitalWrite") {
                 setDigitalPin(parseFloat(p1), parseFloat(p2))
             }
             if (cmd == "analogWrite") {
-                SetAnalogPin(parseFloat(p1), parseFloat(p2))
+                setAnalogPin(parseFloat(p1), parseFloat(p2))
             }
             reportedproperties = "add here"
             doCommands = false
         }
     }
 
-   
-    /////////////////
-    // End IoT Client
-    /////////////////
-
-
-    /////////////////////
-    // Start IoT Commands
-    /////////////////////
-
-     function SetAnalogPin (pin: number, value: number) {
+    function setAnalogPin (pin: number, value: number) {
         basic.showString("a")
         if (pin == 0) {
             pins.analogWritePin(AnalogPin.P0, value)
@@ -516,6 +671,19 @@ namespace IoT_gateway {
         }
         if (pin == 2) {
             pins.analogWritePin(AnalogPin.P2, value)
+        }
+    }
+
+    function setDigitalPin (pin: number, value: number) {
+        basic.showString("d")
+        if (pin == 0) {
+            pins.digitalWritePin(DigitalPin.P0, value)
+        }
+        if (pin == 1) {
+            pins.digitalWritePin(DigitalPin.P1, value)
+        }
+        if (pin == 2) {
+            pins.digitalWritePin(DigitalPin.P2, value)
         }
     }
 
@@ -548,18 +716,20 @@ namespace IoT_gateway {
         }
     }
 
-    function servo (value: number) {
+    function setServo (value: number) {
         basic.showString("s")
         pins.servoWritePin(AnalogPin.P0, value)
         basic.pause(1000)
         basic.clearScreen()
     }
+
     function setRGB (r: number, g: number, b: number) {
         basic.showString("r")
         strip.showColor(neopixel.rgb(r, g, b))
         basic.pause(1000)
         basic.clearScreen()
     }
+
     function setIdentity (i: number, v: number) {
         if (v == control.deviceSerialNumber()) {
             identity = i
@@ -579,18 +749,6 @@ namespace IoT_gateway {
         strip.setBrightness(value)
         strip.showRainbow(1, 360)
         strip.show()
-    }
-    function setDigitalPin (pin: number, value: number) {
-        basic.showString("d")
-        if (pin == 0) {
-            pins.digitalWritePin(DigitalPin.P0, value)
-        }
-        if (pin == 1) {
-            pins.digitalWritePin(DigitalPin.P1, value)
-        }
-        if (pin == 2) {
-            pins.digitalWritePin(DigitalPin.P2, value)
-        }
     }
 
     function who () {
