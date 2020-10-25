@@ -41,7 +41,6 @@ namespace NodeRed {
     let deviceMode = Mode.Gateway
     let showDebug = true
     let doTelemetry = true
-    let doGatewayOrchestrator = false
     //onStart()
     //debug("onStart() > time", control.millis())
     const init_telemetry = "{\"topic\":\"telemetry\"}"
@@ -72,14 +71,16 @@ namespace NodeRed {
     export function setMode(mode: Mode) {
         switch (mode) {
             case Mode.Leaf: {
+                deviceMode=Mode.Leaf
                 identity=-1
                 break;
             }
             case Mode.Gateway: {
-                identity=null
+                deviceMode=Mode.Gateway
                 break;
             }
             case Mode.Both: {
+                deviceMode=Mode.Both
                 identity=0
                 break;
             }
@@ -100,8 +101,7 @@ namespace NodeRed {
 
     //% block
     export function runGatewayOrchestrator (): void {
-        doGatewayOrchestrator = true
-        if (doGatewayOrchestrator) {
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
             //debug("start orchestration ...")
             //debug("activeRadioRequest = " + activeRadioRequest)
             if (activeRadioRequest) {
@@ -124,137 +124,140 @@ namespace NodeRed {
     }
   
     function request_next_mb () {
-        microbit_ID = (microbit_ID + 1) % device_registrar.length
-        debug("request next microbit",microbit_ID)
-        if (device_telemetry[microbit_ID] != null) {
-            if (microbit_ID == 0) {
-                debug("request data from gateway")
-                setTimerGatewayRequest()
-                send_gateway_telemetry()
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            microbit_ID = (microbit_ID + 1) % device_registrar.length
+            debug("request next microbit",microbit_ID)
+            if (device_telemetry[microbit_ID] != null) {
+                if (microbit_ID == 0) {
+                    debug("request data from gateway")
+                    setTimerGatewayRequest()
+                    send_gateway_telemetry()
+                } else {
+                    // ?? dit gebeurt blijkbaar voordat new mb geregisteerd is ?
+                    debug("request data from remote IoT microbit")
+                    debug("send token", device_registrar[microbit_ID])
+                    setTimerRadioRequest()
+                    activeRadioRequest = true
+                    radio.sendValue("token", device_registrar[microbit_ID])
+                }
             } else {
-                // ?? dit gebeurt blijkbaar voordat new mb geregisteerd is ?
-                debug("request data from remote IoT microbit")
-                debug("send token", device_registrar[microbit_ID])
-                setTimerRadioRequest()
-                activeRadioRequest = true
-                radio.sendValue("token", device_registrar[microbit_ID])
+                debug("exception > device_telemetry["+microbit_ID+"] = null")
             }
-        } else {
-            debug("exception > device_telemetry["+microbit_ID+"] = null")
         }
     }
 
     function send_gateway_telemetry() {
-        if (doTelemetry) {
-            debug("send gateway telemetry data")
-            let sn=control.deviceSerialNumber()
-            gatewaySendTelemetry(sn,"id", 0)
-            gatewaySendTelemetry(sn,"sn", sn)
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            if (doTelemetry) {
+                debug("send gateway telemetry data")
+                let sn=control.deviceSerialNumber()
+                gatewaySendTelemetry(sn,"id", 0)
+                gatewaySendTelemetry(sn,"sn", sn)
 
-            gatewaySendTelemetry(sn,"time", input.runningTime())
-            gatewaySendTelemetry(sn,"packetLoss", packet_loss)
-            gatewaySendTelemetry(sn,"signal", 100)
-            gatewaySendTelemetry(sn,"temp", input.temperature())
-            gatewaySendTelemetry(sn,"lightLevel", input.lightLevel())
+                gatewaySendTelemetry(sn,"time", input.runningTime())
+                gatewaySendTelemetry(sn,"packetLoss", packet_loss)
+                gatewaySendTelemetry(sn,"signal", 100)
+                gatewaySendTelemetry(sn,"temp", input.temperature())
+                gatewaySendTelemetry(sn,"lightLevel", input.lightLevel())
 
-            gatewaySendTelemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
-            gatewaySendTelemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
-            gatewaySendTelemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
-            
-            gatewaySendTelemetry(sn,"compass", 1)
-            gatewaySendTelemetry(sn,"digitalPinP0", pins.digitalReadPin(DigitalPin.P0))
-            gatewaySendTelemetry(sn,"digitalPinP1", pins.digitalReadPin(DigitalPin.P1))
-            gatewaySendTelemetry(sn,"digitalPinP2", pins.digitalReadPin(DigitalPin.P2))
-            gatewaySendTelemetry(sn,"analogPinP0", pins.analogReadPin(AnalogPin.P0))
-            gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
-            gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
-            
-            //property(sn, "prop1", 1)
-            gatewaySendTelemetry(sn,"eom", 1)
-            //property(sn,"eom", 1)
+                gatewaySendTelemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
+                gatewaySendTelemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
+                gatewaySendTelemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
+                
+                gatewaySendTelemetry(sn,"compass", 1)
+                gatewaySendTelemetry(sn,"digitalPinP0", pins.digitalReadPin(DigitalPin.P0))
+                gatewaySendTelemetry(sn,"digitalPinP1", pins.digitalReadPin(DigitalPin.P1))
+                gatewaySendTelemetry(sn,"digitalPinP2", pins.digitalReadPin(DigitalPin.P2))
+                gatewaySendTelemetry(sn,"analogPinP0", pins.analogReadPin(AnalogPin.P0))
+                gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
+                gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
+                
+                //property(sn, "prop1", 1)
+                gatewaySendTelemetry(sn,"eom", 1)
+                //property(sn,"eom", 1)
+            }
         }
     }
 
     function next_gateway () {
-        debug("check on next gateway request ...")
-        if (input.runningTime() > timerGatewayRequest) {
-            debug("request data from gateway")
-            setTimerGatewayRequest()
-            send_gateway_telemetry()
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            debug("check on next gateway request ...")
+            if (input.runningTime() > timerGatewayRequest) {
+                debug("request data from gateway")
+                setTimerGatewayRequest()
+                send_gateway_telemetry()
+            }
         }
     }
 
     function delMicrobit (sn: number) {
-        //TODO - continue here ...
-        debug("delMicrobit() > sn", sn)
-        id = device_registrar.indexOf(sn)
-        debug("delMicrobit() > id", id)
-        if (id >= 0) {
-            if (device_telemetry[id] != null) { // veranderen in functie die zegt of device active is
-                device_telemetry[id] = null
-                radio.sendString("setId(-1," + sn + ")")
-                debug("delMicrobit > radio.sendString > setId(-1,sn)", sn)
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            //TODO - continue here ...
+            debug("delMicrobit() > sn", sn)
+            id = device_registrar.indexOf(sn)
+            debug("delMicrobit() > id", id)
+            if (id >= 0) {
+                if (device_telemetry[id] != null) { // veranderen in functie die zegt of device active is
+                    device_telemetry[id] = null
+                    radio.sendString("setId(-1," + sn + ")")
+                    debug("delMicrobit > radio.sendString > setId(-1,sn)", sn)
+                }
             }
         }
     }
 
     function debug(s: string, v?: number) {
-        if (showDebug) {
-            const topic = "{\"topic\":\"debug\","
-            const t1 = ""+ "\"debug\": \"" + s
-            let v1=""
-            if (v != null) {
-                v1 = " = " + v + "\"}"
-            } else {
-                v1 = "\"}"
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            if (showDebug) {
+                const topic = "{\"topic\":\"debug\","
+                const t1 = ""+ "\"debug\": \"" + s
+                let v1=""
+                if (v != null) {
+                    v1 = " = " + v + "\"}"
+                } else {
+                    v1 = "\"}"
+                }
+                serial.writeLine(topic + t1 + v1)
+                basic.pause(20)
             }
-            serial.writeLine(topic + t1 + v1)
-            basic.pause(20)
         }
     }
 
-    input.onButtonPressed(Button.B, function () {
-        showDebug = !(showDebug)
-        if (showDebug) {
-            basic.showString("D")
-        } else {
-            basic.showString("")
-        }
-    })
-
     function addMicrobit (sn: number) {
-        id = device_registrar.indexOf(sn)
-        debug("addMicrobit("+sn+")")
-        debug("id",id)
-        if (id < 0) {
-            debug("id < 0")
-            // device does not exist yet, add new device
-            device_registrar.push(sn)
-            device_telemetry.push(init_telemetry)
-            device_property.push(init_property)
-            device_log.push(init_log)
-            radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-            debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-            setTimerRadioRequest(1000)
-            setTimerGatewayRequest(1000)
-            // basic.pause(500)
-        } else {
-            debug("id >= 0") 
-            /*
-            // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
-            device_telemetry[id] = init_telemetry
-            debug("init_telemetry["+id+"] = "+device_telemetry[id] )
-            debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-            radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-            debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-            setTimerRadioRequest(1000)
-            basic.pause(500)
-            */
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            id = device_registrar.indexOf(sn)
+            debug("addMicrobit("+sn+")")
+            debug("id",id)
+            if (id < 0) {
+                debug("id < 0")
+                // device does not exist yet, add new device
+                device_registrar.push(sn)
+                device_telemetry.push(init_telemetry)
+                device_property.push(init_property)
+                device_log.push(init_log)
+                radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                setTimerRadioRequest(1000)
+                setTimerGatewayRequest(1000)
+                // basic.pause(500)
+            } else {
+                debug("id >= 0") 
+                /*
+                // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
+                device_telemetry[id] = init_telemetry
+                debug("init_telemetry["+id+"] = "+device_telemetry[id] )
+                debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                setTimerRadioRequest(1000)
+                basic.pause(500)
+                */
+            }
         }
     }
 
     radio.onReceivedValue(function (name, value) {
-        if (doGatewayOrchestrator) {
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
             //debug("radio.onReceivedValue(" + name + "," + value + ")")
             setTimerRadioRequest() // waarom is dit nog nodig ?
             sn = radio.receivedPacket(RadioPacketProperty.SerialNumber)
@@ -321,80 +324,86 @@ namespace NodeRed {
     })
 
     function gatewaySendProperty (sn: number, text: string, num: number) {
-        microbit_ID = device_registrar.indexOf(sn)
-        debug("ID="+microbit_ID+" sn="+sn+" property("+text+","+num+")")
-        let JSON = device_property[microbit_ID]
-        if (JSON.includes("}")) {
-            JSON = JSON.substr(0, JSON.length - 1)
-            JSON = "" + JSON + ","
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            microbit_ID = device_registrar.indexOf(sn)
+            debug("ID="+microbit_ID+" sn="+sn+" property("+text+","+num+")")
+            let JSON = device_property[microbit_ID]
+            if (JSON.includes("}")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + ","
+            }
+            if (true) {
+                JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
+            } else {
+                debug("skipped: " + text + ":" + num)
+            }
+            if (JSON.includes("eom")) {
+                debug("eom property")
+                led.plot(device_registrar.indexOf(sn), 4)
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                led.unplot(device_registrar.indexOf(sn), 4)
+                JSON = init_property
+            } 
+            device_property[microbit_ID] = JSON
         }
-        if (true) {
-            JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
-        } else {
-            debug("skipped: " + text + ":" + num)
-        }
-        if (JSON.includes("eom")) {
-            debug("eom property")
-            led.plot(device_registrar.indexOf(sn), 4)
-            serial.writeLine(JSON)
-            basic.pause(delay)
-            led.unplot(device_registrar.indexOf(sn), 4)
-            JSON = init_property
-        } 
-        device_property[microbit_ID] = JSON
     }
 
     function gatewaySendLog (sn: number, text: string, num: number) {
-        microbit_ID = device_registrar.indexOf(sn)
-        debug("ID="+microbit_ID+" sn="+sn+" log("+text+","+num+")")
-        let JSON = device_log[microbit_ID]
-        if (JSON.includes("}")) {
-            JSON = JSON.substr(0, JSON.length - 1)
-            JSON = "" + JSON + ","
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            microbit_ID = device_registrar.indexOf(sn)
+            debug("ID="+microbit_ID+" sn="+sn+" log("+text+","+num+")")
+            let JSON = device_log[microbit_ID]
+            if (JSON.includes("}")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + ","
+            }
+            if (true) {
+                JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
+            } else {
+                debug("skipped: " + text + ":" + num)
+            }
+            if (JSON.includes("eom")) {
+                debug("eom log")
+                led.plot(device_registrar.indexOf(sn), 4)
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                led.unplot(device_registrar.indexOf(sn), 4)
+                JSON = init_log
+            }
+            device_log[microbit_ID] = JSON
         }
-        if (true) {
-            JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
-        } else {
-            debug("skipped: " + text + ":" + num)
-        }
-        if (JSON.includes("eom")) {
-            debug("eom log")
-            led.plot(device_registrar.indexOf(sn), 4)
-            serial.writeLine(JSON)
-            basic.pause(delay)
-            led.unplot(device_registrar.indexOf(sn), 4)
-            JSON = init_log
-        }
-        device_log[microbit_ID] = JSON
     }
 
     function gatewaySendTelemetry (sn: number, text: string, num: number) {
-        //microbit_ID = device_registrar.indexOf(sn)
-        //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
-        let JSON=""
-        JSON = device_telemetry[microbit_ID]
-        if (JSON.includes("}")) {
-            JSON = JSON.substr(0, JSON.length - 1)
-            JSON = "" + JSON + ","
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            //microbit_ID = device_registrar.indexOf(sn)
+            //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
+            let JSON=""
+            JSON = device_telemetry[microbit_ID]
+            if (JSON.includes("}")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + ","
+            }
+            if (JSON.includes("id") || text == "id") {
+                JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
+            } else {
+                debug("skipped: " + text + ":" + num)
+            }
+            if (JSON.includes("eom")) {
+                //debug("eom telemetry")
+                led.plot(device_registrar.indexOf(sn), 4)
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                led.unplot(device_registrar.indexOf(sn), 4)
+                JSON = init_telemetry
+            }
+            device_telemetry[microbit_ID] = JSON
         }
-        if (JSON.includes("id") || text == "id") {
-            JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
-        } else {
-            debug("skipped: " + text + ":" + num)
-        }
-        if (JSON.includes("eom")) {
-            //debug("eom telemetry")
-            led.plot(device_registrar.indexOf(sn), 4)
-            serial.writeLine(JSON)
-            basic.pause(delay)
-            led.unplot(device_registrar.indexOf(sn), 4)
-            JSON = init_telemetry
-        }
-        device_telemetry[microbit_ID] = JSON
     }
 
     serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-        if (doGatewayOrchestrator) {
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
             serialRead = serial.readUntil(serial.delimiters(Delimiters.NewLine))
             debug("serial.onDataReceived() > serialRead ="+ serialRead)
             if (!(serialRead.isEmpty())) {
@@ -417,17 +426,20 @@ namespace NodeRed {
     })
 
     function setTimerRadioRequest (t?:number) {
-        const v = t || 400
-        timerRadioRequest = input.runningTime() + v
-        //debug("resetTimerRadioRequest", timerRadioRequest)
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            const v = t || 400
+            timerRadioRequest = input.runningTime() + v
+            //debug("resetTimerRadioRequest", timerRadioRequest)
+        }
     }
 
     function setTimerGatewayRequest (t?:number) {
-        const v = t || 250
-        timerGatewayRequest = input.runningTime() + v
-        //debug("resetTimerGatewayRequest",timerGatewayRequest)
+        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+            const v = t || 250
+            timerGatewayRequest = input.runningTime() + v
+            //debug("resetTimerGatewayRequest",timerGatewayRequest)
+        }
     }
-
     
     ///////////////////
     // End IoT Gateway
@@ -503,41 +515,43 @@ namespace NodeRed {
 
     function leafSendTelemetry () {
         // send telemetry from Leave Device to the Gateway Device
-        if (doTelemetry) {
-            radio.sendValue("id", identity) //TODO: define identity
-            basic.pause(delay)
-            radio.sendValue("sn", 0)
-            basic.pause(delay)
-            radio.sendValue("time", 0)
-            basic.pause(delay)
-            radio.sendValue("packet", 0)
-            basic.pause(delay)
-            radio.sendValue("signal", 0)
-            basic.pause(delay)
-            radio.sendValue("temp", input.temperature())
-            basic.pause(delay)
-            radio.sendValue("light", input.lightLevel())
-            basic.pause(delay)
-            radio.sendValue("accX", input.acceleration(Dimension.X))
-            basic.pause(delay)
-            radio.sendValue("accY", input.acceleration(Dimension.Y))
-            basic.pause(delay)
-            radio.sendValue("accZ", input.acceleration(Dimension.Z))
-            basic.pause(delay)
-            radio.sendValue("comp", 1)
-            basic.pause(delay)
-            radio.sendValue("dP0", pins.digitalReadPin(DigitalPin.P0))
-            basic.pause(delay)
-            radio.sendValue("dP1", pins.digitalReadPin(DigitalPin.P1))
-            basic.pause(delay)
-            radio.sendValue("dP2", pins.digitalReadPin(DigitalPin.P2))
-            basic.pause(delay)
-            radio.sendValue("aP0", pins.analogReadPin(AnalogPin.P0))
-            basic.pause(delay)
-            radio.sendValue("aP1", pins.analogReadPin(AnalogPin.P1))
-            basic.pause(delay)
-            radio.sendValue("aP2", pins.analogReadPin(AnalogPin.P2))
-            basic.pause(delay)
+        if (deviceMode==Mode.Leaf) {
+            if (doTelemetry) {
+                radio.sendValue("id", identity) //TODO: define identity
+                basic.pause(delay)
+                radio.sendValue("sn", 0)
+                basic.pause(delay)
+                radio.sendValue("time", 0)
+                basic.pause(delay)
+                radio.sendValue("packet", 0)
+                basic.pause(delay)
+                radio.sendValue("signal", 0)
+                basic.pause(delay)
+                radio.sendValue("temp", input.temperature())
+                basic.pause(delay)
+                radio.sendValue("light", input.lightLevel())
+                basic.pause(delay)
+                radio.sendValue("accX", input.acceleration(Dimension.X))
+                basic.pause(delay)
+                radio.sendValue("accY", input.acceleration(Dimension.Y))
+                basic.pause(delay)
+                radio.sendValue("accZ", input.acceleration(Dimension.Z))
+                basic.pause(delay)
+                radio.sendValue("comp", 1)
+                basic.pause(delay)
+                radio.sendValue("dP0", pins.digitalReadPin(DigitalPin.P0))
+                basic.pause(delay)
+                radio.sendValue("dP1", pins.digitalReadPin(DigitalPin.P1))
+                basic.pause(delay)
+                radio.sendValue("dP2", pins.digitalReadPin(DigitalPin.P2))
+                basic.pause(delay)
+                radio.sendValue("aP0", pins.analogReadPin(AnalogPin.P0))
+                basic.pause(delay)
+                radio.sendValue("aP1", pins.analogReadPin(AnalogPin.P1))
+                basic.pause(delay)
+                radio.sendValue("aP2", pins.analogReadPin(AnalogPin.P2))
+                basic.pause(delay)
+            }
         }    
     }
 
