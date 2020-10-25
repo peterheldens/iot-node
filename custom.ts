@@ -33,6 +33,8 @@ enum Mode {
     Both
 }
 
+//% groups="['EndPoint', 'Gateway','General']"
+
 //% weight=100 color=#0fbc11 icon=""
 namespace NodeRed {
     //////////////////
@@ -68,6 +70,7 @@ namespace NodeRed {
     addMicrobit(control.deviceSerialNumber())
 
     //% block
+    //% group="General"
     export function setMode(mode: Mode) {
         switch (mode) {
             case Mode.Leaf: {
@@ -88,18 +91,21 @@ namespace NodeRed {
     }
 
     //% block="set debugger $on"
+    //% group="Gateway"
     //% on.shadow="toggleOnOff"
     export function enableDebug(on: boolean) {
         showDebug = on;
     }
 
     //%block="telemetry $b"
+    //% group="General"
     //% b.shadow="toggleOnOff"
     export function sendTelemetry(b: boolean) {
         doTelemetry = b
     }
 
     //% block
+    //% group="Gateway"
     export function runGatewayOrchestrator (): void {
         if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
             //debug("start orchestration ...")
@@ -457,6 +463,7 @@ namespace NodeRed {
     let propValue: number[] = []
 
     //%block="submit property | name = $p | value = $v"
+    //% group="EndPoint"
     export function addProperty(p: string, v:number) {
         const index = propString.indexOf(p)
         if ( index < 0) {
@@ -469,24 +476,28 @@ namespace NodeRed {
     }
 
     //%block="property $b"
+    //% group="EndPoint"
     //% b.shadow="toggleOnOff"
     export function sendProperty(b: boolean) {
         doProperty = b
     }
 
     //%block="device2cloud $b"
+    //% group="EndPoint"
     //% b.shadow="toggleOnOff"
     export function sendD2C(b: boolean) {
         doTelemetry = b
     }
 
     //%block="debug $b"
+    //% group="EndPoint"
     //% b.shadow="toggleOnOff"
     export function sendDebug(b: boolean) {
-        doTelemetry = b
+        doTelemetry = b //??????
     }
 
     //% block
+    //% group="EndPoint"
     export function registerDevice () {
         basic.clearScreen()
         if (identity < 0) {
@@ -502,6 +513,7 @@ namespace NodeRed {
         who()
     }
     //% block
+    //% group="EndPoint"
     export function unregisterDevice () {
         basic.clearScreen()
         if (identity >= 0) {
@@ -556,52 +568,64 @@ namespace NodeRed {
     }
 
     function leafSendEom () {
-        radio.sendValue("eom", 1)
-        basic.pause(delay)
+        if (deviceMode==Mode.Leaf) {
+            radio.sendValue("eom", 1)
+            basic.pause(delay)
+        }
     }
 
     function leafSendDevice2cloud () {
         // send device property to the cloud
-        if (doD2C) {
-            radio.sendValue("device2cloud", 1)
-            basic.pause(delay)
+        if (deviceMode==Mode.Leaf) {
+            if (doD2C) {
+                radio.sendValue("device2cloud", 1)
+                basic.pause(delay)
+            }
         }
     }
 
     function leafSendProperty () {
     // send device property to the cloud
-    if (doProperty) {
-        while (propString.length > 0) {
-            const s=propString.pop()
-            const v=propValue.pop()
-            radio.sendValue(s, v)
-            basic.pause(delay)
+    if (deviceMode==Mode.Leaf) {
+        if (doProperty) {
+            while (propString.length > 0) {
+                const s=propString.pop()
+                const v=propValue.pop()
+                radio.sendValue(s, v)
+                basic.pause(delay)
+                }
             }
         }
     }
 
     function leafSendDebug () {
         // send debug info to the cloud
-        if (doDebug) {
-            radio.sendValue("d:id", identity)
-            basic.pause(delay)
+        if (deviceMode==Mode.Leaf) {
+            if (doDebug) {
+                radio.sendValue("d:id", identity)
+                basic.pause(delay)
+            }
         }
     }
 
     radio.onReceivedString(function (receivedString) {
-        serialRead = receivedString
-        doCommands = true
-        cloud2device()
+        if (deviceMode==Mode.Leaf) {
+            serialRead = receivedString
+            doCommands = true
+            cloud2device()
+        }
     })
 
     radio.onReceivedValue(function (name, value) {
-        if (identity >= 0) {
-            if (name == "token" && value == control.deviceSerialNumber()) {
-                leafSendTelemetry()
-                leafSendProperty()
-                leafSendDevice2cloud()
-                leafSendDebug()
-                leafSendEom()
+        if (deviceMode==Mode.Leaf) {
+            if (identity >= 0) {
+                if (name == "token" && value == control.deviceSerialNumber()) {
+                    leafSendTelemetry()
+                    leafSendProperty()
+                    leafSendDevice2cloud()
+                    leafSendDebug()
+                    leafSendEom()
+                }
             }
         }
     })
