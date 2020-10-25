@@ -1,12 +1,30 @@
 
 /**
+ * Author: Peter Heldens, 25- okt 2020
+ * 
+ * NodeRed Extension to experiment with:
+ * - Azure IoT Digital Twins
+ * - Telemetry, Cloud2Device (C2D), Device2Cloud (D2C)
+ * - NodeRed & Dashboards
+ * 
+ * It supports multiple microbits Leaf Nodes and one (1) microbit Gateway.
+ * - Leaf Nodes use Radio to communicate with the Gateway.
+ * - Gateway Node use Serial communication to a serial device (Node-Red server).
+ * - Leaf Nodes respond to Gateway (after Gateway initiated a HandShake).
+ * 
+ * Leaf Nodes respond to Gateway by:
+ * - sending Telemetry, Properties, Commands to the Gateway
+ * - receiving C2D commands from the Gateway
+ * - executing C2D commands targeted to the specific Leaf Node
+ *  
+ * GateWay Node orchestrates:
+ * - radio communication to Leaf Nodes using HandShakes
+ * - serial communication to Node-Red server (Any PC/Android/RaspberryPi)
+ *  *  
  * Use this file to define custom functions and blocks.
  * Read more at https://makecode.microbit.org/blocks/custom
  */
 
-/**
- * Custom blocks
- */
 //% weight=100 color=#0fbc11 icon=""
 namespace NodeRed {
     //////////////////
@@ -103,29 +121,29 @@ namespace NodeRed {
         if (doTelemetry) {
             debug("send gateway telemetry data")
             let sn=control.deviceSerialNumber()
-            telemetry(sn,"id", 0)
-            telemetry(sn,"sn", sn)
+            gatewaySendTelemetry(sn,"id", 0)
+            gatewaySendTelemetry(sn,"sn", sn)
 
-            telemetry(sn,"time", input.runningTime())
-            telemetry(sn,"packetLoss", packet_loss)
-            telemetry(sn,"signal", 100)
-            telemetry(sn,"temp", input.temperature())
-            telemetry(sn,"lightLevel", input.lightLevel())
+            gatewaySendTelemetry(sn,"time", input.runningTime())
+            gatewaySendTelemetry(sn,"packetLoss", packet_loss)
+            gatewaySendTelemetry(sn,"signal", 100)
+            gatewaySendTelemetry(sn,"temp", input.temperature())
+            gatewaySendTelemetry(sn,"lightLevel", input.lightLevel())
 
-            telemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
-            telemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
-            telemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
+            gatewaySendTelemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
+            gatewaySendTelemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
+            gatewaySendTelemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
             
-            telemetry(sn,"compass", 1)
-            telemetry(sn,"digitalPinP0", pins.digitalReadPin(DigitalPin.P0))
-            telemetry(sn,"digitalPinP1", pins.digitalReadPin(DigitalPin.P1))
-            telemetry(sn,"digitalPinP2", pins.digitalReadPin(DigitalPin.P2))
-            telemetry(sn,"analogPinP0", pins.analogReadPin(AnalogPin.P0))
-            telemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
-            telemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
+            gatewaySendTelemetry(sn,"compass", 1)
+            gatewaySendTelemetry(sn,"digitalPinP0", pins.digitalReadPin(DigitalPin.P0))
+            gatewaySendTelemetry(sn,"digitalPinP1", pins.digitalReadPin(DigitalPin.P1))
+            gatewaySendTelemetry(sn,"digitalPinP2", pins.digitalReadPin(DigitalPin.P2))
+            gatewaySendTelemetry(sn,"analogPinP0", pins.analogReadPin(AnalogPin.P0))
+            gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
+            gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
             
             //property(sn, "prop1", 1)
-            telemetry(sn,"eom", 1)
+            gatewaySendTelemetry(sn,"eom", 1)
             //property(sn,"eom", 1)
         }
     }
@@ -225,57 +243,57 @@ namespace NodeRed {
                 //  debug("radio.onReceivedValue() > index",index)
                 led.plot(index, 3)
                 if (name == "id") {
-                    telemetry(sn, "id", value)
+                    gatewaySendTelemetry(sn, "id", value)
                 } else if (name == "sn") {
-                    telemetry(sn, "sn", sn) //waarom abs ?
+                    gatewaySendTelemetry(sn, "sn", sn) //waarom abs ?
                 } else if (name == "time") {
-                    telemetry(sn, "time", radio.receivedPacket(RadioPacketProperty.Time))
+                    gatewaySendTelemetry(sn, "time", radio.receivedPacket(RadioPacketProperty.Time))
                 } else if (name == "packet") {
-                    telemetry(sn, "packetLoss", packet_loss)
+                    gatewaySendTelemetry(sn, "packetLoss", packet_loss)
                 } else if (name == "signal") {
-                    telemetry(sn, "signalStrength", radio.receivedPacket(RadioPacketProperty.SignalStrength))
+                    gatewaySendTelemetry(sn, "signalStrength", radio.receivedPacket(RadioPacketProperty.SignalStrength))
                 } else if (name == "light") {
-                    telemetry(sn, "lightLevel", value)
+                    gatewaySendTelemetry(sn, "lightLevel", value)
                 } else if (name == "accX") {
-                    telemetry(sn, "accelerometerX", value)
+                    gatewaySendTelemetry(sn, "accelerometerX", value)
                 } else if (name == "accY") {
-                    telemetry(sn, "accelerometerY", value)
+                    gatewaySendTelemetry(sn, "accelerometerY", value)
                 } else if (name == "accZ") {
-                    telemetry(sn, "accelerometerZ", value)
+                    gatewaySendTelemetry(sn, "accelerometerZ", value)
                 } else if (name == "comp") {
-                    telemetry(sn, "compass", value)
+                    gatewaySendTelemetry(sn, "compass", value)
                 } else if (name == "dP0") {
-                    telemetry(sn, "digitalPinP0", value)
+                    gatewaySendTelemetry(sn, "digitalPinP0", value)
                 } else if (name == "dP1") {
-                    telemetry(sn, "digitalPinP1", value)
+                    gatewaySendTelemetry(sn, "digitalPinP1", value)
                 } else if (name == "dP2") {
-                    telemetry(sn, "digitalPinP2", value)
+                    gatewaySendTelemetry(sn, "digitalPinP2", value)
                 } else if (name == "aP0") {
-                    telemetry(sn, "analogPinP0", value)
+                    gatewaySendTelemetry(sn, "analogPinP0", value)
                 } else if (name == "aP1") {
-                    telemetry(sn, "analogPinP1", value)
+                    gatewaySendTelemetry(sn, "analogPinP1", value)
                 } else if (name == "aP2") {
-                    telemetry(sn, "analogPinP2", value)
+                    gatewaySendTelemetry(sn, "analogPinP2", value)
                 } else if (name == "temp") {
-                    telemetry(sn, "temperature", value)
+                    gatewaySendTelemetry(sn, "temperature", value)
                 } else if (name == "eom") {
-                    telemetry(sn, "eom", value)
-                    property(sn, "eom", value)
-                    log(sn, "eom", value)
+                    gatewaySendTelemetry(sn, "eom", value)
+                    gatewaySendProperty(sn, "eom", value)
+                    gatewaySendLog(sn, "eom", value)
                     activeRadioRequest = false
                 } else if (name.substr(0, 2) == "d:") {
                     // debug/log data
-                    log(sn, name.substr(2,name.length), value)
+                    gatewaySendLog(sn, name.substr(2,name.length), value)
                 } else {
                     // property data
-                    property(sn, name, value)
+                    gatewaySendProperty(sn, name, value)
                 }
                 led.unplot(index, 3)
             }
         }
     })
 
-    function property (sn: number, text: string, num: number) {
+    function gatewaySendProperty (sn: number, text: string, num: number) {
         microbit_ID = device_registrar.indexOf(sn)
         debug("ID="+microbit_ID+" sn="+sn+" property("+text+","+num+")")
         let JSON = device_property[microbit_ID]
@@ -299,7 +317,7 @@ namespace NodeRed {
         device_property[microbit_ID] = JSON
     }
 
-    function log (sn: number, text: string, num: number) {
+    function gatewaySendLog (sn: number, text: string, num: number) {
         microbit_ID = device_registrar.indexOf(sn)
         debug("ID="+microbit_ID+" sn="+sn+" log("+text+","+num+")")
         let JSON = device_log[microbit_ID]
@@ -323,7 +341,7 @@ namespace NodeRed {
         device_log[microbit_ID] = JSON
     }
 
-    function telemetry (sn: number, text: string, num: number) {
+    function gatewaySendTelemetry (sn: number, text: string, num: number) {
         //microbit_ID = device_registrar.indexOf(sn)
         //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
         let JSON=""
@@ -393,7 +411,6 @@ namespace NodeRed {
     ///////////////////
     let radioGroup = 101
     let identity = -1 // TODO define identity
-    let doTelemetry = true
     let doProperty = true
     let doD2C = true
     let doDebug = true
@@ -414,12 +431,6 @@ namespace NodeRed {
             propString[index] = p
             propValue[index] = v
         }    
-    }
-
-    //%block="telemetry $b"
-    //% b.shadow="toggleOnOff"
-    export function sendTelemetry(b: boolean) {
-        doTelemetry = b
     }
 
     //%block="property $b"
@@ -467,8 +478,8 @@ namespace NodeRed {
         }
     }
 
-    function telemetry () {
-        // send telemetry to the cloud
+    function leafSendTelemetry () {
+        // send telemetry from Leave Device to the Gateway Device
         if (doTelemetry) {
             radio.sendValue("id", identity) //TODO: define identity
             basic.pause(delay)
@@ -507,12 +518,12 @@ namespace NodeRed {
         }    
     }
 
-    function eom () {
+    function leafSendEom () {
         radio.sendValue("eom", 1)
         basic.pause(delay)
     }
 
-    function device2cloud () {
+    function leafSendDevice2cloud () {
         // send device property to the cloud
         if (doD2C) {
             radio.sendValue("device2cloud", 1)
@@ -520,7 +531,7 @@ namespace NodeRed {
         }
     }
 
-    function property () {
+    function leafSendProperty () {
     // send device property to the cloud
     if (doProperty) {
         while (propString.length > 0) {
@@ -532,7 +543,7 @@ namespace NodeRed {
         }
     }
 
-    function debug () {
+    function leafSendDebug () {
         // send debug info to the cloud
         if (doDebug) {
             radio.sendValue("d:id", identity)
@@ -549,11 +560,11 @@ namespace NodeRed {
     radio.onReceivedValue(function (name, value) {
         if (identity >= 0) {
             if (name == "token" && value == control.deviceSerialNumber()) {
-                telemetry()
-                property()
-                device2cloud()
-                debug()
-                eom()
+                leafSendTelemetry()
+                leafSendProperty()
+                leafSendDevice2cloud()
+                leafSendDebug()
+                leafSendEom()
             }
         }
     })
