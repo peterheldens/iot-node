@@ -36,7 +36,7 @@ enum Mode {
 //% groups="['EndPoint', 'Gateway','General']"
 
 //% weight=100 color=#0fbc11 icon=""
-namespace NodeRed {
+namespace IoT {
     //////////////////
     // Start IoT_gateway
     //////////////////
@@ -446,10 +446,12 @@ namespace NodeRed {
             //debug("resetTimerGatewayRequest",timerGatewayRequest)
         }
     }
+
     
     ///////////////////
     // End IoT Gateway
     ///////////////////
+
 
     ///////////////////
     // Start IoT Client
@@ -609,14 +611,15 @@ namespace NodeRed {
     }
 
     radio.onReceivedString(function (receivedString) {
+        //incoming request from Gateway with new C2D request
         if (deviceMode==Mode.Leaf) {
-            serialRead = receivedString
-            doCommands = true
-            cloud2device()
+            doCommands = true //TODO: kan dit niet gewoon weg ? Was voor handshake ...
+            processC2D(receivedString)
         }
     })
 
     radio.onReceivedValue(function (name, value) {
+        //incoming Handshake request from Gateway to deliver D2C Telemetry, etc.
         if (deviceMode==Mode.Leaf) {
             if (identity >= 0) {
                 if (name == "token" && value == control.deviceSerialNumber()) {
@@ -640,14 +643,9 @@ namespace NodeRed {
     /////////////////////
     // Start IoT Commands
     /////////////////////
-    let str = ""
-    let reportedproperties = ""
-    let iconnumber = 0
-    let doCommands = false
-//    let serialRead = ""
 
- //   let identity = 0
- //   identity = -1
+    // doCommands is a global variable for HandShakeset in radio.onReceivedString(function (receivedString))
+    let doCommands = false 
 
     // define NeoPixel Strip
     let strip: neopixel.Strip = null
@@ -655,25 +653,20 @@ namespace NodeRed {
     strip.clear()
     strip.show()
 
-
-    serialRead = ""
-    doCommands = false
- //   delay = 10
-
-    function cloud2device () {
+    function processC2D (s:string) {
         // process cloud commands
-        if (!(serialRead.isEmpty())) {
-            const t0:string[] = serialRead.split(":")
+        if (!(s.isEmpty())) {
+            const t0:string[] = s.split(":")
             if (t0.length == 1) {
                 // received a generic command
-                const t1:string[] = serialRead.split("(")
+                const t1:string[] = s.split("(")
                 const t2:string[] = t1[1].split(")")
                 const t3:string[] = t2[0].split(",")
                 const cmd = convertToText(t1[0])
                 const p1 = t3[0]
                 const p2 = t3[1]
                 const p3 = t3[2]
-                serialRead = ""
+                s = "" // TODO waarom ??
                 basic.showString("" + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
@@ -687,7 +680,7 @@ namespace NodeRed {
                     const p1 = t3[0]
                     const p2 = t3[1]
                     const p3 = t3[2]
-                    serialRead = ""
+                    s = "" //TODO: Waarom ??
                     invokeCommands(cmd, p1,p2,p3)
                 }
             }
@@ -697,6 +690,9 @@ namespace NodeRed {
  
     function invokeCommands (cmd:string, p1:string, p2:string, p3:string) {
         if (doCommands) {
+            // run this once and wait for new HandShake from Leaf Device
+            // doCommands is set in radio.onReceivedString(function (receivedString))
+            doCommands = false
             if (cmd == "setId") {
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
@@ -730,8 +726,7 @@ namespace NodeRed {
             if (cmd == "analogWrite") {
                 setAnalogPin(parseFloat(p1), parseFloat(p2))
             }
-            reportedproperties = "add here"
-            doCommands = false
+            //TODO reportedproperties = "add here"
         }
     }
 
@@ -777,7 +772,7 @@ namespace NodeRed {
         } else if (name == "sad") {
             basic.showIcon(IconNames.Sad)
         } else if (name == "random") {
-            iconnumber = randint(0, 2)
+            const iconnumber = randint(0, 2)
             basic.clearScreen()
             basic.pause(500)
             if (iconnumber == 0) {
@@ -857,7 +852,7 @@ namespace NodeRed {
             strip.showRainbow(1, 360)
         }
         strip.show()
-        reportedproperties = "\"" + color + "\""
+        //TODO reportedproperties = "\"" + color + "\""
     }
 
     /////////////////////
