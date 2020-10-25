@@ -20,16 +20,25 @@
  * GateWay Node orchestrates:
  * - radio communication to Leaf Nodes using HandShakes
  * - serial communication to Node-Red server (Any PC/Android/RaspberryPi)
- *  *  
- * Use this file to define custom functions and blocks.
- * Read more at https://makecode.microbit.org/blocks/custom
+ * 
+ *  tips to create blocks:
+ *  https://makecode.microbit.org/blocks/custom
+ *  https://makecode.com/playground
+ * 
  */
+
+enum Mode {
+    Leaf,
+    Gateway,
+    Both
+}
 
 //% weight=100 color=#0fbc11 icon=""
 namespace NodeRed {
     //////////////////
     // Start IoT_gateway
     //////////////////
+    let deviceMode = Mode.Gateway
     let showDebug = true
     let doTelemetry = true
     let doGatewayOrchestrator = false
@@ -58,6 +67,24 @@ namespace NodeRed {
     microbit_ID = 0
     //add this gateway microbit a index  0
     addMicrobit(control.deviceSerialNumber())
+
+    //% block
+    export function setMode(mode: Mode) {
+        switch (mode) {
+            case Mode.Leaf: {
+                identity=-1
+                break;
+            }
+            case Mode.Gateway: {
+                identity=null
+                break;
+            }
+            case Mode.Both: {
+                identity=0
+                break;
+            }
+        }
+    }
 
     //% block="set debugger $on"
     //% on.shadow="toggleOnOff"
@@ -417,10 +444,6 @@ namespace NodeRed {
     let propString: string[] = []
     let propValue: number[] = []
 
-    radio.setGroup(101)
-    radio.setTransmitSerialNumber(true)
-    radio.setTransmitPower(7)
-
     //%block="submit property | name = $p | value = $v"
     export function addProperty(p: string, v:number) {
         const index = propString.indexOf(p)
@@ -579,23 +602,25 @@ namespace NodeRed {
     /////////////////////
     // Start IoT Commands
     /////////////////////
-     //   let temp0: string[] = []
     let str = ""
     let reportedproperties = ""
- //   let cmd = ""
     let iconnumber = 0
-//    let delay = 0
     let doCommands = false
 //    let serialRead = ""
+
+ //   let identity = 0
+ //   identity = -1
+
+    // define NeoPixel Strip
     let strip: neopixel.Strip = null
-    let identity = 0
-    identity = -1
     strip = neopixel.create(DigitalPin.P1, 10, NeoPixelMode.RGB)
     strip.clear()
     strip.show()
+
+
     serialRead = ""
     doCommands = false
-    delay = 10
+ //   delay = 10
 
     function cloud2device () {
         // process cloud commands
