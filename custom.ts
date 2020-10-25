@@ -43,31 +43,29 @@ namespace IoT {
     let deviceMode = Mode.Gateway
     let showDebug = true
     let doTelemetry = true
-    //onStart()
-    //debug("onStart() > time", control.millis())
+    //init D2C data
     const init_telemetry = "{\"topic\":\"telemetry\"}"
     const init_property = "{\"topic\":\"property\"}"
     const init_log = "{\"topic\":\"device_log\"}"
-    let serialRead = ""
-    let index = 0
-    let sn = 0
-    let id = 0
-    let packet_loss = 0
     let device_telemetry: string[] = []
     let device_property: string[] = []
     let device_log: string[] = []
+    //init EndPoint array
     let device_registrar: number[] = []
+    //init packet_loss TODO: attach packet loss to leaf device, with array ?
+    let packet_loss = 0
+    //init timers
     let timerRadioRequest = 0
     let timerGatewayRequest = 0
-    let microbit_ID = 0
+
+    let microbit_ID = 0 // this is the index of the current Leaf to be processed
     let delay = 20
     let activeRadioRequest = false
+
+    //init Radio
     radio.setTransmitPower(7)
     radio.setGroup(101)
     radio.setTransmitSerialNumber(true)
-    microbit_ID = 0
-    //add this gateway microbit a index  0
-    addMicrobit(control.deviceSerialNumber())
 
     //% block
     //% group="General"
@@ -75,16 +73,21 @@ namespace IoT {
         switch (mode) {
             case Mode.Leaf: {
                 deviceMode=Mode.Leaf
+                //Leaf device with identity = -1 (unregistered to Gateway)
                 identity=-1
                 break;
             }
             case Mode.Gateway: {
                 deviceMode=Mode.Gateway
+                //Gateway device with identity = 1 (unregister to Gateway)
+                identity=-1
                 break;
             }
             case Mode.Both: {
                 deviceMode=Mode.Both
+                //Gateway device with identity = 0 (register to Gateway)
                 identity=0
+                addMicrobit(control.deviceSerialNumber())
                 break;
             }
         }
@@ -200,7 +203,7 @@ namespace IoT {
         if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
             //TODO - continue here ...
             debug("delMicrobit() > sn", sn)
-            id = device_registrar.indexOf(sn)
+            const id = device_registrar.indexOf(sn)
             debug("delMicrobit() > id", id)
             if (id >= 0) {
                 if (device_telemetry[id] != null) { // veranderen in functie die zegt of device active is
@@ -231,7 +234,7 @@ namespace IoT {
 
     function addMicrobit (sn: number) {
         if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
-            id = device_registrar.indexOf(sn)
+            const id = device_registrar.indexOf(sn)
             debug("addMicrobit("+sn+")")
             debug("id",id)
             if (id < 0) {
@@ -266,7 +269,7 @@ namespace IoT {
         if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
             //debug("radio.onReceivedValue(" + name + "," + value + ")")
             setTimerRadioRequest() // waarom is dit nog nodig ?
-            sn = radio.receivedPacket(RadioPacketProperty.SerialNumber)
+            const sn = radio.receivedPacket(RadioPacketProperty.SerialNumber)
             //debug("radio.onReceivedValue() > sn",sn)
             if((name=="register") || (name=="del")) {
                 if (name == "register") {
@@ -275,9 +278,9 @@ namespace IoT {
                         delMicrobit(sn)
                 }
             } else {
-                index = device_registrar.indexOf(sn)
-                //  debug("radio.onReceivedValue() > index",index)
-                led.plot(index, 3)
+                const id = device_registrar.indexOf(sn)
+                //  debug("radio.onReceivedValue() > id",id)
+                led.plot(id, 3)
                 if (name == "id") {
                     gatewaySendTelemetry(sn, "id", value)
                 } else if (name == "sn") {
@@ -324,7 +327,7 @@ namespace IoT {
                     // property data
                     gatewaySendProperty(sn, name, value)
                 }
-                led.unplot(index, 3)
+                led.unplot(id, 3)
             }
         }
     })
@@ -410,7 +413,7 @@ namespace IoT {
 
     serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
-            serialRead = serial.readUntil(serial.delimiters(Delimiters.NewLine))
+            const serialRead = serial.readUntil(serial.delimiters(Delimiters.NewLine))
             debug("serial.onDataReceived() > serialRead ="+ serialRead)
             if (!(serialRead.isEmpty())) {
                 const t0 = serialRead.split(":")
