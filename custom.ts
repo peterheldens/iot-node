@@ -7,7 +7,7 @@
  * - Telemetry, Cloud2Device (C2D), Device2Cloud (D2C)
  * - NodeRed & Dashboards
  * 
- * It supports multiple microbits Leaf Nodes and one (1) microbit Gateway.
+ * It supports multiple microbits Leaf Nodes (EndPoints) and one (1) microbit Gateway.
  * - Leaf Nodes use Radio to communicate with the Gateway.
  * - Gateway Node use Serial communication to a serial device (Node-Red server).
  * - Leaf Nodes respond to Gateway (after Gateway initiated a HandShake).
@@ -25,15 +25,21 @@
  *  https://makecode.microbit.org/blocks/custom
  *  https://makecode.com/playground
  * 
+ * TODO: 
+ * [] gateway: enable property
+ * [] endpoint: enable telemetry switch for EndPoint
+ * [] endpoint: remove debug
+ * [] gateway: make register/unregister work the same as for the endpoint? or rename to register endpoint
+ * [] gateway: make submit property name = work the same as for Mode.EndPoint
+ * [] change IoT icon to some IoT hub or Radio account
  */
 
 enum Mode {
-    Leaf,
-    Gateway,
-    Both
+    EndPoint,
+    Gateway
 }
 
-//% groups="['EndPoint', 'Gateway','General']"
+//% groups="['Gateway','EndPoint','General']"
 
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
@@ -52,7 +58,7 @@ namespace IoT {
     let device_log: string[] = []
     //init EndPoint array
     let device_registrar: number[] = []
-    //init packet_loss TODO: attach packet loss to leaf device, with array ?
+    //init packet_loss TODO: attach packet loss to endPoint device, with array ?
     let packet_loss = 0
     //init timers
     let timerRadioRequest = 0
@@ -68,32 +74,25 @@ namespace IoT {
     radio.setTransmitSerialNumber(true)
 
     //% block
-    //% group="General"
+    //% group="Gateway"
     export function setMode(mode: Mode) {
         switch (mode) {
-            case Mode.Leaf: {
-                deviceMode=Mode.Leaf
-                //Leaf device with identity = -1 (unregistered to Gateway)
+            case Mode.EndPoint: {
+                deviceMode=Mode.EndPoint
+                //EndPoint device with identity = -1 (unregistered to Gateway)
                 identity=-1
                 break;
             }
             case Mode.Gateway: {
                 deviceMode=Mode.Gateway
-                //Gateway device with identity = 1 (unregister to Gateway)
-                identity=-1
-                break;
-            }
-            case Mode.Both: {
-                deviceMode=Mode.Both
                 //Gateway device with identity = 0 (register to Gateway)
                 identity=0
                 addMicrobit(control.deviceSerialNumber())
-                break;
             }
         }
     }
 
-    //% block="set debugger $on"
+    //% block="set debug mode $on"
     //% group="Gateway"
     //% on.shadow="toggleOnOff"
     export function enableDebug(on: boolean) {
@@ -110,7 +109,7 @@ namespace IoT {
     //% block
     //% group="Gateway"
     export function runGatewayOrchestrator (): void {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             //debug("start orchestration ...")
             //debug("activeRadioRequest = " + activeRadioRequest)
             if (activeRadioRequest) {
@@ -133,7 +132,7 @@ namespace IoT {
     }
   
     function request_next_mb () {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             microbit_ID = (microbit_ID + 1) % device_registrar.length
             debug("request next microbit",microbit_ID)
             if (device_telemetry[microbit_ID] != null) {
@@ -156,7 +155,7 @@ namespace IoT {
     }
 
     function send_gateway_telemetry() {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             if (doTelemetry) {
                 debug("send gateway telemetry data")
                 let sn=control.deviceSerialNumber()
@@ -189,7 +188,7 @@ namespace IoT {
     }
 
     function next_gateway () {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             debug("check on next gateway request ...")
             if (input.runningTime() > timerGatewayRequest) {
                 debug("request data from gateway")
@@ -200,7 +199,7 @@ namespace IoT {
     }
 
     function delMicrobit (sn: number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             //TODO - continue here ...
             debug("delMicrobit() > sn", sn)
             const id = device_registrar.indexOf(sn)
@@ -216,7 +215,7 @@ namespace IoT {
     }
 
     function debug(s: string, v?: number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             if (showDebug) {
                 const topic = "{\"topic\":\"debug\","
                 const t1 = ""+ "\"debug\": \"" + s
@@ -233,7 +232,7 @@ namespace IoT {
     }
 
     function addMicrobit (sn: number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             const id = device_registrar.indexOf(sn)
             debug("addMicrobit("+sn+")")
             debug("id",id)
@@ -266,7 +265,7 @@ namespace IoT {
     }
 
     radio.onReceivedValue(function (name, value) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             //debug("radio.onReceivedValue(" + name + "," + value + ")")
             setTimerRadioRequest() // waarom is dit nog nodig ?
             const sn = radio.receivedPacket(RadioPacketProperty.SerialNumber)
@@ -333,7 +332,7 @@ namespace IoT {
     })
 
     function gatewaySendProperty (sn: number, text: string, num: number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             microbit_ID = device_registrar.indexOf(sn)
             debug("ID="+microbit_ID+" sn="+sn+" property("+text+","+num+")")
             let JSON = device_property[microbit_ID]
@@ -359,7 +358,7 @@ namespace IoT {
     }
 
     function gatewaySendLog (sn: number, text: string, num: number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             microbit_ID = device_registrar.indexOf(sn)
             debug("ID="+microbit_ID+" sn="+sn+" log("+text+","+num+")")
             let JSON = device_log[microbit_ID]
@@ -385,7 +384,7 @@ namespace IoT {
     }
 
     function gatewaySendTelemetry (sn: number, text: string, num: number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             //microbit_ID = device_registrar.indexOf(sn)
             //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
             let JSON=""
@@ -412,7 +411,7 @@ namespace IoT {
     }
 
     serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             const serialRead = serial.readUntil(serial.delimiters(Delimiters.NewLine))
             debug("serial.onDataReceived() > serialRead ="+ serialRead)
             if (!(serialRead.isEmpty())) {
@@ -435,7 +434,7 @@ namespace IoT {
     })
 
     function setTimerRadioRequest (t?:number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             const v = t || 400
             timerRadioRequest = input.runningTime() + v
             //debug("resetTimerRadioRequest", timerRadioRequest)
@@ -443,7 +442,7 @@ namespace IoT {
     }
 
     function setTimerGatewayRequest (t?:number) {
-        if ((deviceMode==Mode.Gateway) || (deviceMode==Mode.Both)) {
+        if (deviceMode==Mode.Gateway) {
             const v = t || 250
             timerGatewayRequest = input.runningTime() + v
             //debug("resetTimerGatewayRequest",timerGatewayRequest)
@@ -532,7 +531,7 @@ namespace IoT {
 
     function leafSendTelemetry () {
         // send telemetry from Leave Device to the Gateway Device
-        if (deviceMode==Mode.Leaf) {
+        if (deviceMode==Mode.EndPoint) {
             if (doTelemetry) {
                 radio.sendValue("id", identity) //TODO: define identity
                 basic.pause(delay)
@@ -573,7 +572,7 @@ namespace IoT {
     }
 
     function leafSendEom () {
-        if (deviceMode==Mode.Leaf) {
+        if (deviceMode==Mode.EndPoint) {
             radio.sendValue("eom", 1)
             basic.pause(delay)
         }
@@ -581,7 +580,7 @@ namespace IoT {
 
     function leafSendDevice2cloud () {
         // send device property to the cloud
-        if (deviceMode==Mode.Leaf) {
+        if (deviceMode==Mode.EndPoint) {
             if (doD2C) {
                 radio.sendValue("device2cloud", 1)
                 basic.pause(delay)
@@ -591,7 +590,7 @@ namespace IoT {
 
     function leafSendProperty () {
     // send device property to the cloud
-    if (deviceMode==Mode.Leaf) {
+    if (deviceMode==Mode.EndPoint) {
         if (doProperty) {
             while (propString.length > 0) {
                 const s=propString.pop()
@@ -605,7 +604,7 @@ namespace IoT {
 
     function leafSendDebug () {
         // send debug info to the cloud
-        if (deviceMode==Mode.Leaf) {
+        if (deviceMode==Mode.EndPoint) {
             if (doDebug) {
                 radio.sendValue("d:id", identity)
                 basic.pause(delay)
@@ -615,7 +614,7 @@ namespace IoT {
 
     radio.onReceivedString(function (receivedString) {
         //incoming request from Gateway with new C2D request
-        if (deviceMode==Mode.Leaf) {
+        if (deviceMode==Mode.EndPoint) {
             doCommands = true //TODO: kan dit niet gewoon weg ? Was voor handshake ...
             processC2D(receivedString)
         }
@@ -623,7 +622,7 @@ namespace IoT {
 
     radio.onReceivedValue(function (name, value) {
         //incoming Handshake request from Gateway to deliver D2C Telemetry, etc.
-        if (deviceMode==Mode.Leaf) {
+        if (deviceMode==Mode.EndPoint) {
             if (identity >= 0) {
                 if (name == "token" && value == control.deviceSerialNumber()) {
                     leafSendTelemetry()
