@@ -32,6 +32,7 @@
  * [] gateway: make register/unregister work the same as for the endpoint? or rename to register endpoint
  * [] gateway: make submit property name = work the same as for Mode.EndPoint
  * [] change IoT icon to some IoT hub or Radio account
+ * [x] enable/disable properties (digital write, analog write, accelerometer,etc.)
  */
 
 enum Mode {
@@ -39,7 +40,7 @@ enum Mode {
     Gateway
 }
 
-//% groups="['Gateway','EndPoint','General']"
+//% groups="['Gateway','EndPoint','General','Advanced"]"
 
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
@@ -49,6 +50,7 @@ namespace IoT {
     let deviceMode = Mode.Gateway
     let showDebug = true
     let doTelemetry = true
+
     //init D2C data
     const init_telemetry = "{\"topic\":\"telemetry\"}"
     const init_property = "{\"topic\":\"property\"}"
@@ -56,15 +58,18 @@ namespace IoT {
     let device_telemetry: string[] = []
     let device_property: string[] = []
     let device_log: string[] = []
+
     //init EndPoint array
     let device_registrar: number[] = []
+
     //init packet_loss TODO: attach packet loss to endPoint device, with array ?
     let packet_loss = 0
+
     //init timers
     let timerRadioRequest = 0
     let timerGatewayRequest = 0
 
-    let microbit_ID = 0 // this is the index of the current Leaf to be processed
+    let microbit_ID = 0 // this is the index of the EndPoint to be processed using the HandShake
     let delay = 20
     let activeRadioRequest = false
 
@@ -75,7 +80,7 @@ namespace IoT {
 
     //% block
     //% group="Gateway"
-    export function setMode(mode: Mode) {
+    export function setDeviceMode(mode: Mode) {
         switch (mode) {
             case Mode.EndPoint: {
                 deviceMode=Mode.EndPoint
@@ -139,7 +144,7 @@ namespace IoT {
                 if (microbit_ID == 0) {
                     debug("request data from gateway")
                     setTimerGatewayRequest()
-                    send_gateway_telemetry()
+                    gatewaySubmitTelemetry()
                 } else {
                     // ?? dit gebeurt blijkbaar voordat new mb geregisteerd is ?
                     debug("request data from remote IoT microbit")
@@ -154,10 +159,10 @@ namespace IoT {
         }
     }
 
-    function send_gateway_telemetry() {
+    function gatewaySubmitTelemetry() {
         if (deviceMode==Mode.Gateway) {
             if (doTelemetry) {
-                debug("send gateway telemetry data")
+                debug("submit gateway telemetry data")
                 let sn=control.deviceSerialNumber()
                 gatewaySendTelemetry(sn,"id", 0)
                 gatewaySendTelemetry(sn,"sn", sn)
@@ -188,12 +193,13 @@ namespace IoT {
     }
 
     function next_gateway () {
+        //TODO - is this module still used ???
         if (deviceMode==Mode.Gateway) {
             debug("check on next gateway request ...")
             if (input.runningTime() > timerGatewayRequest) {
                 debug("request data from gateway")
                 setTimerGatewayRequest()
-                send_gateway_telemetry()
+                gatewaySubmitTelemetry()
             }
         }
     }
@@ -215,6 +221,7 @@ namespace IoT {
     }
 
     function debug(s: string, v?: number) {
+        // send Gateway debug info as JSON string from to ComPort
         if (deviceMode==Mode.Gateway) {
             if (showDebug) {
                 const topic = "{\"topic\":\"debug\","
@@ -232,6 +239,7 @@ namespace IoT {
     }
 
     function addMicrobit (sn: number) {
+        // add EndPoint device to the device registrar
         if (deviceMode==Mode.Gateway) {
             const id = device_registrar.indexOf(sn)
             debug("addMicrobit("+sn+")")
@@ -332,6 +340,7 @@ namespace IoT {
     })
 
     function gatewaySendProperty (sn: number, text: string, num: number) {
+        // assemble data object and send as JSON String to ComPort
         if (deviceMode==Mode.Gateway) {
             microbit_ID = device_registrar.indexOf(sn)
             debug("ID="+microbit_ID+" sn="+sn+" property("+text+","+num+")")
@@ -358,6 +367,7 @@ namespace IoT {
     }
 
     function gatewaySendLog (sn: number, text: string, num: number) {
+        // assemble data object and send as JSON String to ComPort
         if (deviceMode==Mode.Gateway) {
             microbit_ID = device_registrar.indexOf(sn)
             debug("ID="+microbit_ID+" sn="+sn+" log("+text+","+num+")")
@@ -384,6 +394,7 @@ namespace IoT {
     }
 
     function gatewaySendTelemetry (sn: number, text: string, num: number) {
+        // assemble data object and send as JSON String to ComPort
         if (deviceMode==Mode.Gateway) {
             //microbit_ID = device_registrar.indexOf(sn)
             //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
@@ -411,18 +422,22 @@ namespace IoT {
     }
 
     serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+        //receive C2D commands from ComPort
         if (deviceMode==Mode.Gateway) {
             const serialRead = serial.readUntil(serial.delimiters(Delimiters.NewLine))
             debug("serial.onDataReceived() > serialRead ="+ serialRead)
             if (!(serialRead.isEmpty())) {
                 const t0 = serialRead.split(":")
+                // C2D command is generic to all EndPoint devices
                 if (t0.length == 1) {
                     radio.sendString(serialRead)
                     debug("serial.onDataReceived() > radio.sendString("+ serialRead+")")
                 }
                 if (t0.length == 2) {
+                // C2D command is for specific named EndPoint devices (n; 0<n<N)
                     const t1 = t0[0].split(",")
                     for (let i = 0; i <= t1.length - 1; i++) {
+                        // convert EndPoint devices N:1 
                         const cmd = "" + t1[i] + ":" + t0[1]
                         radio.sendString(cmd)
                         debug("serial.onDataReceived() > radio.sendString("+cmd+")")
@@ -465,6 +480,12 @@ namespace IoT {
     let doDebug = true
     let propString: string[] = []
     let propValue: number[] = []
+    let doAccelerometer = false
+    let doDigitalRead = false
+    let doAnalogRead = false
+    let doCompass = false
+    let doTemperature = false
+    let doLightLevel = false
 
     //%block="submit property | name = $p | value = $v"
     //% group="EndPoint"
@@ -485,6 +506,49 @@ namespace IoT {
     export function sendProperty(b: boolean) {
         doProperty = b
     }
+
+    //%block="accelerometer $b"
+    //% group="Advanced"
+    //% b.shadow="toggleOnOff"
+    export function sendAccelerometer(b: boolean) {
+        doAccelerometer = b
+    }
+
+    //%block="analog read $b"
+    //% group="Advanced"
+    //% b.shadow="toggleOnOff"
+    export function sendAnalogRead(b: boolean) {
+        doAnalogRead = b
+    }
+
+    //%block="digital read $b"
+    //% group="Advanced"
+    //% b.shadow="toggleOnOff"
+    export function sendDigitalRead(b: boolean) {
+        doDigitalRead = b
+    }
+
+     //%block="temperature $b"
+    //% group="Advanced"
+    //% b.shadow="toggleOnOff"
+    export function sendTemperature(b: boolean) {
+        doTemperature = b
+    }
+
+    //%block="light level $b"
+    //% group="Advanced"
+    //% b.shadow="toggleOnOff"
+    export function sendLightLevel(b: boolean) {
+        doLightLevel = b
+    }
+
+    //%block="compass $b"
+    //% group="Advanced"
+    //% b.shadow="toggleOnOff"
+    export function sendCompass(b: boolean) {
+        doCompass = b
+    }
+
 
     //%block="device2cloud $b"
     //% group="EndPoint"
