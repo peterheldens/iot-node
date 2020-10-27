@@ -508,42 +508,42 @@ namespace IoT {
     }
 
     //%block="accelerometer $b"
-    //% group="Advanced"
+    //% group="Advanced" advanced=true
     //% b.shadow="toggleOnOff"
     export function sendAccelerometer(b: boolean) {
         doAccelerometer = b
     }
 
     //%block="analog read $b"
-    //% group="Advanced"
+    //% group="Advanced" advanced=true
     //% b.shadow="toggleOnOff"
     export function sendAnalogRead(b: boolean) {
         doAnalogRead = b
     }
 
     //%block="digital read $b"
-    //% group="Advanced"
+    //% group="Advanced" advanced=true
     //% b.shadow="toggleOnOff"
     export function sendDigitalRead(b: boolean) {
         doDigitalRead = b
     }
 
      //%block="temperature $b"
-    //% group="Advanced"
+    //% group="Advanced" advanced=true
     //% b.shadow="toggleOnOff"
     export function sendTemperature(b: boolean) {
         doTemperature = b
     }
 
     //%block="light level $b"
-    //% group="Advanced"
+    //% group="Advanced" advanced=true
     //% b.shadow="toggleOnOff"
     export function sendLightLevel(b: boolean) {
         doLightLevel = b
     }
 
     //%block="compass $b"
-    //% group="Advanced"
+    //% group="Advanced" advanced=true
     //% b.shadow="toggleOnOff"
     export function sendCompass(b: boolean) {
         doCompass = b
