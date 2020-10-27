@@ -170,21 +170,31 @@ namespace IoT {
                 gatewaySendTelemetry(sn,"time", input.runningTime())
                 gatewaySendTelemetry(sn,"packetLoss", packet_loss)
                 gatewaySendTelemetry(sn,"signal", 100)
-                gatewaySendTelemetry(sn,"temp", input.temperature())
-                gatewaySendTelemetry(sn,"lightLevel", input.lightLevel())
-
-                gatewaySendTelemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
-                gatewaySendTelemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
-                gatewaySendTelemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
-                
-                gatewaySendTelemetry(sn,"compass", 1)
-                gatewaySendTelemetry(sn,"digitalPinP0", pins.digitalReadPin(DigitalPin.P0))
-                gatewaySendTelemetry(sn,"digitalPinP1", pins.digitalReadPin(DigitalPin.P1))
-                gatewaySendTelemetry(sn,"digitalPinP2", pins.digitalReadPin(DigitalPin.P2))
-                gatewaySendTelemetry(sn,"analogPinP0", pins.analogReadPin(AnalogPin.P0))
-                gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
-                gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
-                
+                if (doTemperature) {
+                    gatewaySendTelemetry(sn,"temp", input.temperature())
+                }
+                if(doLightLevel) {
+                    gatewaySendTelemetry(sn,"lightLevel", input.lightLevel())
+                }
+                if (doAccelerometer) {
+                    gatewaySendTelemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
+                    gatewaySendTelemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
+                    gatewaySendTelemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
+                }
+                if (doCompass) {
+                     gatewaySendTelemetry(sn,"compass", 1)
+                }
+                if (doDigitalRead) {
+                    gatewaySendTelemetry(sn,"digitalPinP0", pins.digitalReadPin(DigitalPin.P0))
+                    gatewaySendTelemetry(sn,"digitalPinP1", pins.digitalReadPin(DigitalPin.P1))
+                    gatewaySendTelemetry(sn,"digitalPinP2", pins.digitalReadPin(DigitalPin.P2))
+                }
+                if (doAnalogRead) {
+                    gatewaySendTelemetry(sn,"analogPinP0", pins.analogReadPin(AnalogPin.P0))
+                    gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
+                    gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
+                }
+                //TODO check this
                 //property(sn, "prop1", 1)
                 gatewaySendTelemetry(sn,"eom", 1)
                 //property(sn,"eom", 1)
@@ -607,30 +617,42 @@ namespace IoT {
                 basic.pause(delay)
                 radio.sendValue("signal", 0)
                 basic.pause(delay)
-                radio.sendValue("temp", input.temperature())
-                basic.pause(delay)
-                radio.sendValue("light", input.lightLevel())
-                basic.pause(delay)
-                radio.sendValue("accX", input.acceleration(Dimension.X))
-                basic.pause(delay)
-                radio.sendValue("accY", input.acceleration(Dimension.Y))
-                basic.pause(delay)
-                radio.sendValue("accZ", input.acceleration(Dimension.Z))
-                basic.pause(delay)
-                radio.sendValue("comp", 1)
-                basic.pause(delay)
-                radio.sendValue("dP0", pins.digitalReadPin(DigitalPin.P0))
-                basic.pause(delay)
-                radio.sendValue("dP1", pins.digitalReadPin(DigitalPin.P1))
-                basic.pause(delay)
-                radio.sendValue("dP2", pins.digitalReadPin(DigitalPin.P2))
-                basic.pause(delay)
-                radio.sendValue("aP0", pins.analogReadPin(AnalogPin.P0))
-                basic.pause(delay)
-                radio.sendValue("aP1", pins.analogReadPin(AnalogPin.P1))
-                basic.pause(delay)
-                radio.sendValue("aP2", pins.analogReadPin(AnalogPin.P2))
-                basic.pause(delay)
+                if (doTemperature) {
+                    radio.sendValue("temp", input.temperature())
+                    basic.pause(delay)
+                }
+                if(doLightLevel) {
+                    radio.sendValue("light", input.lightLevel())
+                    basic.pause(delay)
+                }
+                if (doAccelerometer) {
+                    radio.sendValue("accX", input.acceleration(Dimension.X))
+                    basic.pause(delay)
+                    radio.sendValue("accY", input.acceleration(Dimension.Y))
+                    basic.pause(delay)
+                    radio.sendValue("accZ", input.acceleration(Dimension.Z))
+                    basic.pause(delay)
+                }
+                if (doCompass) {
+                    radio.sendValue("comp", 1)
+                    basic.pause(delay)
+                }
+                if (doDigitalRead) {
+                    radio.sendValue("dP0", pins.digitalReadPin(DigitalPin.P0))
+                    basic.pause(delay)
+                    radio.sendValue("dP1", pins.digitalReadPin(DigitalPin.P1))
+                    basic.pause(delay)
+                    radio.sendValue("dP2", pins.digitalReadPin(DigitalPin.P2))
+                    basic.pause(delay)
+                }
+                if (doAnalogRead) {
+                    radio.sendValue("aP0", pins.analogReadPin(AnalogPin.P0))
+                    basic.pause(delay)
+                    radio.sendValue("aP1", pins.analogReadPin(AnalogPin.P1))
+                    basic.pause(delay)
+                    radio.sendValue("aP2", pins.analogReadPin(AnalogPin.P2))
+                    basic.pause(delay)
+                }
             }
         }    
     }
