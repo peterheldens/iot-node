@@ -727,7 +727,7 @@ namespace IoT {
     /////////////////////
 
     // doCommands is a global variable for HandShakeset in radio.onReceivedString(function (receivedString))
-    let doCommands = false 
+    let doCommands = true //TODO: Stond op false, waarschijnlijk voor leaf
 
     // define NeoPixel Strip
     /*
@@ -743,15 +743,15 @@ namespace IoT {
             const t0:string[] = s.split(":")
             if (t0.length == 1) {
                 // received a generic command
-                const t1:string[] = s.split("(")
-                const t2:string[] = t1[1].split(")")
-                const t3:string[] = t2[0].split(",")
+                const t1:string[] = s.split("(")        //t1=cmd
+                const t2:string[] = t1[1].split(")")    //t2=string of parameters
+                const t3:string[] = t2[0].split(",")    //t3=array of parameters
                 const cmd = convertToText(t1[0])
                 const p1 = t3[0]
                 const p2 = t3[1]
                 const p3 = t3[2]
                 s = "" // TODO waarom ??
-                basic.showString("" + (p1))
+                basic.showString("" + cmd + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
             if (t0.length == 2) {
