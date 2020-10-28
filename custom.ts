@@ -26,12 +26,12 @@
  *  https://makecode.com/playground
  * 
  * TODO: 
- * [] gateway: enable property
- * [] endpoint: enable telemetry switch for EndPoint
- * [] endpoint: remove debug
- * [] gateway: make register/unregister work the same as for the endpoint? or rename to register endpoint
- * [] gateway: make submit property name = work the same as for Mode.EndPoint
- * [] change IoT icon to some IoT hub or Radio account
+ * [x] gateway: enable property
+ * [x] endpoint: enable telemetry switch for EndPoint
+ * [0] endpoint: remove debug
+ * [0] gateway: make register/unregister work the same as for the endpoint? or rename to register endpoint
+ * [x] gateway: make submit property name = work the same as for Mode.EndPoint
+ * [0] change IoT icon to some IoT hub or Radio account
  * [x] enable/disable properties (digital write, analog write, accelerometer,etc.)
  */
 
@@ -52,17 +52,17 @@ namespace IoT {
     let doTelemetry = true
 
     //init D2C data
-    const init_telemetry = "{\"topic\":\"telemetry\"}"
-    const init_property = "{\"topic\":\"property\"}"
-    const init_log = "{\"topic\":\"device_log\"}"
-    let device_telemetry: string[] = []
-    let device_property: string[] = []
-    let device_log: string[] = []
+    const init_telemetry    = "{\"topic\":\"telemetry\"}"
+    const init_property     = "{\"topic\":\"property\"}"
+    const init_log          = "{\"topic\":\"device_log\"}"
+    let device_telemetry    : string[] = []
+    let device_property     : string[] = []
+    let device_log          : string[] = []
 
     //init EndPoint array
     let device_registrar: number[] = []
 
-    //init packet_loss TODO: attach packet loss to endPoint device, with array ?
+    //init packet_loss
     let packet_loss = 0
 
     //init timers
@@ -78,7 +78,7 @@ namespace IoT {
     radio.setGroup(101)
     radio.setTransmitSerialNumber(true)
 
-    //% block
+    //% block="start IoT node, mode= $mode"
     //% group="Gateway"
     export function setDeviceMode(mode: Mode) {
         switch (mode) {
@@ -145,6 +145,7 @@ namespace IoT {
                     debug("request data from gateway")
                     setTimerGatewayRequest()
                     gatewaySubmitTelemetry()
+                    gatewaySubmitProperty()
                 } else {
                     // ?? dit gebeurt blijkbaar voordat new mb geregisteerd is ?
                     debug("request data from remote IoT microbit")
@@ -194,22 +195,8 @@ namespace IoT {
                     gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
                     gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
                 }
-                //TODO check this
-                //property(sn, "prop1", 1)
-                gatewaySendTelemetry(sn,"eom", 1)
-                //property(sn,"eom", 1)
-            }
-        }
-    }
 
-    function next_gateway () {
-        //TODO - is this module still used ???
-        if (deviceMode==Mode.Gateway) {
-            debug("check on next gateway request ...")
-            if (input.runningTime() > timerGatewayRequest) {
-                debug("request data from gateway")
-                setTimerGatewayRequest()
-                gatewaySubmitTelemetry()
+                gatewaySendTelemetry(sn,"eom", 1)
             }
         }
     }
@@ -221,7 +208,7 @@ namespace IoT {
             const id = device_registrar.indexOf(sn)
             debug("delMicrobit() > id", id)
             if (id >= 0) {
-                if (device_telemetry[id] != null) { // veranderen in functie die zegt of device active is
+                if (device_telemetry[id] != null) { // TODO:veranderen in functie die zegt of device active is
                     device_telemetry[id] = null
                     radio.sendString("setId(-1," + sn + ")")
                     debug("delMicrobit > radio.sendString > setId(-1,sn)", sn)
@@ -484,7 +471,7 @@ namespace IoT {
     // Start IoT Client
     ///////////////////
     let radioGroup = 101
-    let identity = -1 // TODO define identity
+    let identity = -1
     let doProperty = true
     let doD2C = true
     let doDebug = true
@@ -500,14 +487,51 @@ namespace IoT {
     //%block="submit property | name = $p | value = $v"
     //% group="EndPoint"
     export function addProperty(p: string, v:number) {
+        // add digital twin reported.property
+        // add (name, value) pair to array of (propSting, propValue)
         const index = propString.indexOf(p)
         if ( index < 0) {
+            // we have a new value pair
             propString.push(p)
             propValue.push(v)
         } else {
+            // we have an existing value pair, don't add this one...
+            // current implementation overwrites existing value pair 
+            // the following 2 statements might be deleted (as it is overwrite existing strip.show())
             propString[index] = p
             propValue[index] = v
         }    
+    }
+
+    function leafSendProperty () {
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.EndPoint) { 
+            if (doProperty) {
+                while (propString.length > 0) {
+                    const s=propString.pop()
+                    const v=propValue.pop()
+                    radio.sendValue(s, v)
+                    basic.pause(delay)
+                }   
+            }
+        }
+    }
+
+    function gatewaySubmitProperty () {
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.Gateway) { 
+            if (doProperty) {
+                const sn = control.deviceSerialNumber()
+                while (propString.length > 0) {
+                    const s=propString.pop()
+                    const v=propValue.pop()
+                    gatewaySendProperty(sn,s, v)
+                }   
+                gatewaySendProperty(sn,"eom", 1)
+            }
+        }
     }
 
     //%block="property $b"
@@ -607,7 +631,7 @@ namespace IoT {
         // send telemetry from Leave Device to the Gateway Device
         if (deviceMode==Mode.EndPoint) {
             if (doTelemetry) {
-                radio.sendValue("id", identity) //TODO: define identity
+                radio.sendValue("id", identity)
                 basic.pause(delay)
                 radio.sendValue("sn", 0)
                 basic.pause(delay)
@@ -657,34 +681,10 @@ namespace IoT {
         }    
     }
 
-    function leafSendEom () {
+    function leafSendEndOfMessage () {
         if (deviceMode==Mode.EndPoint) {
             radio.sendValue("eom", 1)
             basic.pause(delay)
-        }
-    }
-
-    function leafSendDevice2cloud () {
-        // send device property to the cloud
-        if (deviceMode==Mode.EndPoint) {
-            if (doD2C) {
-                radio.sendValue("device2cloud", 1)
-                basic.pause(delay)
-            }
-        }
-    }
-
-    function leafSendProperty () {
-    // send device property to the cloud
-    if (deviceMode==Mode.EndPoint) {
-        if (doProperty) {
-            while (propString.length > 0) {
-                const s=propString.pop()
-                const v=propValue.pop()
-                radio.sendValue(s, v)
-                basic.pause(delay)
-                }
-            }
         }
     }
 
@@ -713,9 +713,8 @@ namespace IoT {
                 if (name == "token" && value == control.deviceSerialNumber()) {
                     leafSendTelemetry()
                     leafSendProperty()
-                    leafSendDevice2cloud()
-                    leafSendDebug()
-                    leafSendEom()
+                    //leafSendDebug()
+                    leafSendEndOfMessage()
                 }
             }
         }
@@ -814,7 +813,8 @@ namespace IoT {
             if (cmd == "analogWrite") {
                 setAnalogPin(parseFloat(p1), parseFloat(p2))
             }
-            //TODO reportedproperties = "add here"
+            //TODO reportedproperties = multiple parameters, first check this one.
+            addProperty(cmd, parseFloat(p1))
         }
     }
 
