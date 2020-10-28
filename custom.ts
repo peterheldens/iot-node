@@ -78,7 +78,8 @@ namespace IoT {
     radio.setGroup(101)
     radio.setTransmitSerialNumber(true)
 
-    //% block="start IoT node, mode= $mode"
+    //% block="start IoT node as $mode"
+    //% weight=100
     //% group="Gateway"
     export function setDeviceMode(mode: Mode) {
         switch (mode) {
@@ -99,6 +100,7 @@ namespace IoT {
 
     //% block="set debug mode $on"
     //% group="Gateway"
+    //% weight=10
     //% on.shadow="toggleOnOff"
     export function enableDebug(on: boolean) {
         showDebug = on;
@@ -106,12 +108,14 @@ namespace IoT {
 
     //%block="telemetry $b"
     //% group="General"
+    //% weight=80
     //% b.shadow="toggleOnOff"
     export function sendTelemetry(b: boolean) {
         doTelemetry = b
     }
 
     //% block
+    //% weight=50
     //% group="Gateway"
     export function runGatewayOrchestrator (): void {
         if (deviceMode==Mode.Gateway) {
@@ -481,11 +485,12 @@ namespace IoT {
     let doDigitalRead = false
     let doAnalogRead = false
     let doCompass = false
-    let doTemperature = false
+    let doTemperature = true
     let doLightLevel = true
 
     //%block="submit property | name = $p | value = $v"
-    //% group="EndPoint"
+    //% weight=100
+    //% group="General"
     export function addProperty(p: string, v:number) {
         // add digital twin reported.property
         // add (name, value) pair to array of (propSting, propValue)
@@ -535,7 +540,7 @@ namespace IoT {
     }
 
     //%block="property $b"
-    //% group="EndPoint"
+    //% group="General"
     //% b.shadow="toggleOnOff"
     export function sendProperty(b: boolean) {
         doProperty = b
@@ -564,7 +569,7 @@ namespace IoT {
 
      //%block="temperature $b"
     //% group="Advanced" advanced=true
-    //% b.shadow="toggleOnOff"
+    //% b.shadow="toggleOnOff" default=On
     export function sendTemperature(b: boolean) {
         doTemperature = b
     }
@@ -583,22 +588,8 @@ namespace IoT {
         doCompass = b
     }
 
-
-    //%block="device2cloud $b"
-    //% group="EndPoint"
-    //% b.shadow="toggleOnOff"
-    export function sendD2C(b: boolean) {
-        doTelemetry = b
-    }
-
-    //%block="debug $b"
-    //% group="EndPoint"
-    //% b.shadow="toggleOnOff"
-    export function sendDebug(b: boolean) {
-        doTelemetry = b //??????
-    }
-
     //% block
+    //% weight=100
     //% group="EndPoint"
     export function registerDevice () {
         basic.clearScreen()
@@ -615,6 +606,7 @@ namespace IoT {
         who()
     }
     //% block
+    //% weight=50
     //% group="EndPoint"
     export function unregisterDevice () {
         basic.clearScreen()
