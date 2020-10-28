@@ -431,6 +431,7 @@ namespace IoT {
                 const t0 = serialRead.split(":")
                 // C2D command is generic to all EndPoint devices
                 if (t0.length == 1) {
+                    processC2D(serialRead) //TODO: alleen als doCommands=true?
                     radio.sendString(serialRead)
                     debug("serial.onDataReceived() > radio.sendString("+ serialRead+")")
                 }
@@ -440,6 +441,7 @@ namespace IoT {
                     for (let i = 0; i <= t1.length - 1; i++) {
                         // convert EndPoint devices N:1 
                         const cmd = "" + t1[i] + ":" + t0[1]
+                        processC2D(cmd) //TODO: alleen als doCommands=true?
                         radio.sendString(cmd)
                         debug("serial.onDataReceived() > radio.sendString("+cmd+")")
                         basic.pause(20)
