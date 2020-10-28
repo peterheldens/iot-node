@@ -3,8 +3,7 @@
     "description": "",
     "dependencies": {
         "core": "*",
-        "radio": "*",
-        "neopixel": "github:microsoft/pxt-neopixel#v0.7.3"
+        "radio": "*"
     },
     "files": [
         "main.ts",

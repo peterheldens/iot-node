@@ -52,12 +52,12 @@ namespace IoT {
     let doTelemetry = true
 
     //init D2C data
-    const init_telemetry    = "{\"topic\":\"telemetry\"}"
-    const init_property     = "{\"topic\":\"property\"}"
-    const init_log          = "{\"topic\":\"device_log\"}"
-    let device_telemetry    : string[] = []
-    let device_property     : string[] = []
-    let device_log          : string[] = []
+    const init_telemetry = "{\"topic\":\"telemetry\"}"
+    const init_property = "{\"topic\":\"property\"}"
+    const init_log = "{\"topic\":\"device_log\"}"
+    let device_telemetry: string[] = []
+    let device_property: string[] = []
+    let device_log: string[] = []
 
     //init EndPoint array
     let device_registrar: number[] = []
@@ -727,11 +727,12 @@ namespace IoT {
     let doCommands = false 
 
     // define NeoPixel Strip
+    /*
     let strip: neopixel.Strip = null
     strip = neopixel.create(DigitalPin.P1, 10, NeoPixelMode.RGB)
     strip.clear()
     strip.show()
-
+*/
     function processC2D (s:string) {
         // process cloud commands
         if (!(s.isEmpty())) {
@@ -874,7 +875,7 @@ namespace IoT {
 
     function setRGB (r: number, g: number, b: number) {
         basic.showString("r")
-        strip.showColor(neopixel.rgb(r, g, b))
+        //strip.showColor(neopixel.rgb(r, g, b))
         basic.pause(1000)
         basic.clearScreen()
     }
@@ -895,9 +896,9 @@ namespace IoT {
     }
 
     function setBrightness (value: number) {
-        strip.setBrightness(value)
-        strip.showRainbow(1, 360)
-        strip.show()
+        //strip.setBrightness(value)
+        //strip.showRainbow(1, 360)
+        //strip.show()
     }
 
     function who () {
@@ -906,6 +907,7 @@ namespace IoT {
 
     function setColor (color: string) {
         basic.showString("c")
+        /*
         if (color == "red") {
             strip.showColor(neopixel.colors(NeoPixelColors.Red))
         } else if (color == "orange") {
@@ -933,6 +935,7 @@ namespace IoT {
         }
         strip.show()
         //TODO reportedproperties = "\"" + color + "\""
+        */
     }
 
     /////////////////////
