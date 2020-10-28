@@ -325,7 +325,7 @@ namespace IoT {
                     gatewaySendTelemetry(sn, "temperature", value)
                 } else if (name == "eom") {
                     gatewaySendTelemetry(sn, "eom", value)
-                    gatewaySendProperty(sn, "eom", value)
+                    //gatewaySendProperty(sn, "eom", value)
                     gatewaySendLog(sn, "eom", value)
                     activeRadioRequest = false
                 } else if (name.substr(0, 2) == "d:") {
@@ -527,7 +527,7 @@ namespace IoT {
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
         if (deviceMode==Mode.Gateway) { 
-            if (doProperty) {
+            if ((doProperty) && (propString.length > 0)) {
                 const sn = control.deviceSerialNumber()
                 while (propString.length > 0) {
                     const s=propString.pop()
