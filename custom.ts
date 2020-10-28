@@ -325,7 +325,7 @@ namespace IoT {
                     gatewaySendTelemetry(sn, "temperature", value)
                 } else if (name == "eom") {
                     gatewaySendTelemetry(sn, "eom", value)
-                    //gatewaySendProperty(sn, "eom", value)
+                    //gatewaySendProperty(sn, "eom", value) // TODO: klopt dit wel?
                     gatewaySendLog(sn, "eom", value)
                     activeRadioRequest = false
                 } else if (name.substr(0, 2) == "d:") {
@@ -529,6 +529,7 @@ namespace IoT {
         if (deviceMode==Mode.Gateway) { 
             if ((doProperty) && (propString.length > 0)) {
                 const sn = control.deviceSerialNumber()
+                gatewaySendProperty(sn,"id", microbit_ID)
                 while (propString.length > 0) {
                     const s=propString.pop()
                     const v=propValue.pop()
