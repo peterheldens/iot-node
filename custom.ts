@@ -477,12 +477,12 @@ namespace IoT {
     let doDebug = true
     let propString: string[] = []
     let propValue: number[] = []
-    let doAccelerometer = false
+    let doAccelerometer = true
     let doDigitalRead = false
     let doAnalogRead = false
     let doCompass = false
-    let doTemperature = false
-    let doLightLevel = false
+    let doTemperature = true
+    let doLightLevel = true
 
     //%block="submit property | name = $p | value = $v"
     //% group="EndPoint"
