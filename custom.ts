@@ -481,7 +481,7 @@ namespace IoT {
     let doDigitalRead = false
     let doAnalogRead = false
     let doCompass = false
-    let doTemperature = true
+    let doTemperature = false
     let doLightLevel = true
 
     //%block="submit property | name = $p | value = $v"
