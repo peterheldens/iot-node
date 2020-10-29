@@ -141,17 +141,24 @@ namespace IoT {
     }
   
     function request_next_mb () {
+        // request data from the next microbit using handshake & round robin
         if (deviceMode==Mode.Gateway) {
             microbit_ID = (microbit_ID + 1) % device_registrar.length
             debug("request next microbit",microbit_ID)
             if (device_telemetry[microbit_ID] != null) {
+                if (microbit_ID == -1) {
+                    // The EndPoint not initialised
+                    debug("exception > device_telemetry["+microbit_ID+"] = -1")
+                }
                 if (microbit_ID == 0) {
+                    // The EndPoint is the Gateway 
                     debug("request data from gateway")
                     setTimerGatewayRequest()
                     gatewaySubmitTelemetry()
                     gatewaySubmitProperty()
-                } else {
-                    // ?? dit gebeurt blijkbaar voordat new mb geregisteerd is ?
+                }
+                if (microbit_ID > 0)  {
+                    // The EndPoint is one of the radio connected microbits
                     debug("request data from remote IoT microbit")
                     debug("send token", device_registrar[microbit_ID])
                     setTimerRadioRequest()
@@ -165,6 +172,7 @@ namespace IoT {
     }
 
     function gatewaySubmitTelemetry() {
+        // gateway to submit telemetry
         if (deviceMode==Mode.Gateway) {
             if (doTelemetry) {
                 debug("submit gateway telemetry data")
@@ -199,8 +207,25 @@ namespace IoT {
                     gatewaySendTelemetry(sn,"analogPinP1", pins.analogReadPin(AnalogPin.P1))
                     gatewaySendTelemetry(sn,"analogPinP2", pins.analogReadPin(AnalogPin.P2))
                 }
-
                 gatewaySendTelemetry(sn,"eom", 1)
+            }
+        }
+    }
+
+        function gatewaySubmitProperty () {
+        // gateway to submit property
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.Gateway) { 
+            if ((doProperty) && (propString.length > 0)) {
+                const sn = control.deviceSerialNumber()
+                gatewaySendProperty(sn,"id", microbit_ID)
+                while (propString.length > 0) {
+                    const s=propString.pop()
+                    const v=propValue.pop()
+                    gatewaySendProperty(sn,s, v)
+                }   
+                gatewaySendProperty(sn,"eom", 1)
             }
         }
     }
@@ -525,22 +550,6 @@ namespace IoT {
         }
     }
 
-    function gatewaySubmitProperty () {
-        // send device property value pairs to the cloud
-        // value pair: (name, value) = (propSting, propValue)
-        if (deviceMode==Mode.Gateway) { 
-            if ((doProperty) && (propString.length > 0)) {
-                const sn = control.deviceSerialNumber()
-                gatewaySendProperty(sn,"id", microbit_ID)
-                while (propString.length > 0) {
-                    const s=propString.pop()
-                    const v=propValue.pop()
-                    gatewaySendProperty(sn,s, v)
-                }   
-                gatewaySendProperty(sn,"eom", 1)
-            }
-        }
-    }
 
     //%block="property $b"
     //% group="General"
@@ -751,7 +760,7 @@ namespace IoT {
                 const p2 = t3[1]
                 const p3 = t3[2]
                 s = "" // TODO waarom ??
-                basic.showString("" + cmd + (p1))
+                //basic.showString("" + cmd + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
             if (t0.length == 2) {
