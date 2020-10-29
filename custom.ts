@@ -193,6 +193,17 @@ namespace IoT {
                     gatewaySendTelemetry(sn,"accelerometerX", input.acceleration(Dimension.X))
                     gatewaySendTelemetry(sn,"accelerometerY", input.acceleration(Dimension.Y))
                     gatewaySendTelemetry(sn,"accelerometerZ", input.acceleration(Dimension.Z))
+                    gatewaySendTelemetry(sn,"accelerometerS", input.acceleration(Dimension.Strength))
+                }
+                if (doMagneticForce) {
+                    gatewaySendTelemetry(sn,"magneticForceX", input.magneticForce(Dimension.X))
+                    gatewaySendTelemetry(sn,"magneticForceY", input.magneticForce(Dimension.X))
+                    gatewaySendTelemetry(sn,"magneticForceZ", input.magneticForce(Dimension.X))
+                    gatewaySendTelemetry(sn,"magneticForceS", input.magneticForce(Dimension.Strength))
+                }
+                if (doRotation) {
+                    gatewaySendTelemetry(sn,"rotationPitch", input.rotation(Rotation.Pitch))
+                    gatewaySendTelemetry(sn,"rotationRoll", input.rotation(Rotation.Roll))
                 }
                 if (doCompass) {
                      gatewaySendTelemetry(sn,"compass", 1)
@@ -332,6 +343,20 @@ namespace IoT {
                     gatewaySendTelemetry(sn, "accelerometerY", value)
                 } else if (name == "accZ") {
                     gatewaySendTelemetry(sn, "accelerometerZ", value)
+                } else if (name == "accS") {
+                    gatewaySendTelemetry(sn, "accelerometerS", value)
+                } else if (name == "magX") {
+                    gatewaySendTelemetry(sn, "magneticForceX", value)
+                } else if (name == "magY") {
+                    gatewaySendTelemetry(sn, "magneticForceY", value)
+                } else if (name == "magZ") {
+                    gatewaySendTelemetry(sn, "magneticForceZ", value)
+                } else if (name == "magS") {
+                    gatewaySendTelemetry(sn, "magneticForceS", value)
+                } else if (name == "rotP") {
+                    gatewaySendTelemetry(sn, "rotationPitch", value)
+                } else if (name == "rotR") {
+                    gatewaySendTelemetry(sn, "rotationRoll", value)
                 } else if (name == "comp") {
                     gatewaySendTelemetry(sn, "compass", value)
                 } else if (name == "dP0") {
@@ -509,6 +534,8 @@ namespace IoT {
     let propString: string[] = []
     let propValue: number[] = []
     let doAccelerometer = true
+    let doMagneticForce = true
+    let doRotation = true
     let doDigitalRead = false
     let doAnalogRead = false
     let doCompass = false
@@ -563,6 +590,20 @@ namespace IoT {
     //% b.shadow="toggleOnOff"
     export function sendAccelerometer(b: boolean) {
         doAccelerometer = b
+    }
+
+    //%block="magnetic force $b"
+    //% group="Advanced" advanced=true
+    //% b.shadow="toggleOnOff"
+    export function sendMagneticForce(b: boolean) {
+        doMagneticForce = b
+    }
+
+    //%block="rotation $b"
+    //% group="Advanced" advanced=true
+    //% b.shadow="toggleOnOff"
+    export function sendRotation(b: boolean) {
+        doRotation = b
     }
 
     //%block="analog read $b"
@@ -659,6 +700,18 @@ namespace IoT {
                     radio.sendValue("accY", input.acceleration(Dimension.Y))
                     basic.pause(delay)
                     radio.sendValue("accZ", input.acceleration(Dimension.Z))
+                    basic.pause(delay)
+                    radio.sendValue("accS", input.acceleration(Dimension.Strength))
+                    basic.pause(delay)
+                }
+                if (doMagneticForce) {
+                    radio.sendValue("magX", input.magneticForce(Dimension.X))
+                    basic.pause(delay)
+                    radio.sendValue("magY", input.magneticForce(Dimension.Y))
+                    basic.pause(delay)
+                    radio.sendValue("magZ", input.magneticForce(Dimension.Z))
+                    basic.pause(delay)
+                    radio.sendValue("magS", input.magneticForce(Dimension.Strength))
                     basic.pause(delay)
                 }
                 if (doCompass) {
