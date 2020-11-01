@@ -197,8 +197,8 @@ namespace IoT {
                 }
                 if (doMagneticForce) {
                     gatewaySendTelemetry(sn,"magneticForceX", input.magneticForce(Dimension.X))
-                    gatewaySendTelemetry(sn,"magneticForceY", input.magneticForce(Dimension.X))
-                    gatewaySendTelemetry(sn,"magneticForceZ", input.magneticForce(Dimension.X))
+                    gatewaySendTelemetry(sn,"magneticForceY", input.magneticForce(Dimension.Y))
+                    gatewaySendTelemetry(sn,"magneticForceZ", input.magneticForce(Dimension.Z))
                     gatewaySendTelemetry(sn,"magneticForceS", input.magneticForce(Dimension.Strength))
                 }
                 if (doRotation) {
