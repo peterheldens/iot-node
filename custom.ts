@@ -33,6 +33,12 @@
  * [x] gateway: make submit property name = work the same as for Mode.EndPoint
  * [0] change IoT icon to some IoT hub or Radio account
  * [x] enable/disable properties (digital write, analog write, accelerometer,etc.)
+ * [0] Azure IoT hub connectivity:
+ * [0] sending telemetry to Azure IoT Hub
+ * [0] receiving and responding to direct messages coming from Azure
+ * [0] receiving and responding to desired properties using the Device Twin
+ * [0] updating reported properties in the Device Twin
+ * [0] receiving and responding to C2D messages (commands)
  */
 
 enum Mode {
