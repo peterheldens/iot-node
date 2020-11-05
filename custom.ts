@@ -841,7 +841,7 @@ namespace IoT {
 
  
     function invokeCommands (cmd:string, p1:string, p2:string, p3:string) {
-        if (doCommands) {
+        if (true) { //TODO hier stond if doCommands .....
             // run this once and wait for new HandShake from Leaf Device
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
