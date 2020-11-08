@@ -237,7 +237,7 @@ namespace IoT {
                 const sn = control.deviceSerialNumber()
                 gatewaySendProperty(sn,"id", microbit_ID)
                 for (let i=0; i<propString.length;i++) {
-                    const s=propString(i)
+                    //const s=propString(i)
                     //const v=propValue(i)
                     //gatewaySendProperty(sn,s, v)
                 }   
