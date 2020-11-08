@@ -190,7 +190,7 @@ namespace IoT {
                 gatewaySendTelemetry(sn,"packetLoss", packet_loss)
                 gatewaySendTelemetry(sn,"signal", 100)
                 if (doTemperature) {
-                    gatewaySendTelemetry(sn,"temp", input.temperature())
+                    gatewaySendTelemetry(sn,"temperature", input.temperature())
                 }
                 if(doLightLevel) {
                     gatewaySendTelemetry(sn,"lightLevel", input.lightLevel())
