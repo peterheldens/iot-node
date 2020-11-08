@@ -912,7 +912,7 @@ namespace IoT {
                 setAnalogPin(parseFloat(p1), parseFloat(p2))
             }
             //TODO reportedproperties = multiple parameters, first check this one.
-            addProperty(cmd, parseFloat(p1))
+            //addProperty(cmd, parseFloat(p1))
         }
     }
 
