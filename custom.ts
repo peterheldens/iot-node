@@ -236,12 +236,12 @@ namespace IoT {
             if ((doProperty) && (propString.length > 0)) {
                 const sn = control.deviceSerialNumber()
                 gatewaySendProperty(sn,"id", microbit_ID)
-                for (let i=0; i<propString.length-1;i++) {
+                for (let i=0; i<propString.length;i++) {
                     const s=propString(i)
                     const v=propValue(i)
-                    gatewaySendProperty(sn,s, v)
+                    //gatewaySendProperty(sn,s, v)
                 }   
-                gatewaySendProperty(sn,"eom", 1)
+                //gatewaySendProperty(sn,"eom", 1)
             }
         }
     }
