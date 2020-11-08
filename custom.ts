@@ -592,8 +592,8 @@ namespace IoT {
         if (deviceMode==Mode.EndPoint) { 
             if (doProperty) {
                 for (let i=0; i<propString.length;i++) {
-                    const s=propString(i)
-                    const v=propValue(i)
+                    const s=propString[i]
+                    const v=propValue[i]
                     radio.sendValue(s, v)
                     basic.pause(delay)
                 }   
