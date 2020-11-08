@@ -1,4 +1,3 @@
-
 /**
  * Author: Peter Heldens, 25- okt 2020
  * 
@@ -229,7 +228,25 @@ namespace IoT {
         }
     }
 
-        function gatewaySubmitProperty () {
+    function gatewaySubmitProperty () {
+        // gateway to submit property
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.Gateway) { 
+            if ((doProperty) && (propString.length > 0)) {
+                const sn = control.deviceSerialNumber()
+                gatewaySendProperty(sn,"id", microbit_ID)
+                for (let i=0; i<propString.length;i++) {
+                    const s=propString(i)
+                    const v=propValue(i)
+                    gatewaySendProperty(sn,s, v)
+                }   
+                gatewaySendProperty(sn,"eom", 1)
+            }
+        }
+    }
+
+       function gatewaySubmitPropertyOld () {
         // gateway to submit property
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
@@ -246,6 +263,7 @@ namespace IoT {
             }
         }
     }
+
 
     function delMicrobit (sn: number) {
         if (deviceMode==Mode.Gateway) {
@@ -569,6 +587,21 @@ namespace IoT {
     }
 
     function leafSendProperty () {
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.EndPoint) { 
+            if (doProperty) {
+                for (let i=0; i<propString.length;i++) {
+                    const s=propString(i)
+                    const v=propValue(i)
+                    radio.sendValue(s, v)
+                    basic.pause(delay)
+                }   
+            }
+        }
+    }
+
+        function leafSendPropertyOld () {
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
         if (deviceMode==Mode.EndPoint) { 
