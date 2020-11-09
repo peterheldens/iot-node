@@ -57,9 +57,15 @@ namespace IoT {
     let doTelemetry = true
 
     //init D2C data
+    /*
     const init_telemetry    = "{\"topic\":\"telemetry\"}"
     const init_property     = "{\"topic\":\"property\"}"
     const init_log          = "{\"topic\":\"device_log\"}"
+*/
+    const init_telemetry    = "{\"topic\":\"telemetry\", \"payload\":{}}"
+    const init_property     = "{\"topic\":\"property\", \"payload\":{}}"
+    const init_log          = "{\"topic\":\"device_log\", \"payload\":{}}"
+
     let device_telemetry    : string[] = []
     let device_property     : string[] = []
     let device_log          : string[] = []
