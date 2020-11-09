@@ -334,7 +334,6 @@ namespace IoT {
     }
 
     radio.onReceivedValue(function (name, value) {
-        led.toggle(0, 0)
         if (deviceMode==Mode.Gateway) {
             debug("radio.onReceivedValue(" + name + "," + value + ")")
             setTimerRadioRequest() // waarom is dit nog nodig ?
@@ -699,7 +698,6 @@ namespace IoT {
         basic.clearScreen()
         if (identity < 0) {
             while (identity < 0) {
-                //radio.sendValue("register", 0)
                 radio.sendValue("register", control.deviceSerialNumber())
                 led.toggle(2, 2)
                 basic.pause(200)
@@ -811,7 +809,6 @@ namespace IoT {
         //incoming request from Gateway with new C2D request
         if (deviceMode==Mode.EndPoint) {
             doCommands = true //TODO: kan dit niet gewoon weg ? Was voor handshake ...
-            led.toggle(0, 0)
             processC2D(receivedString)
         }
     })
@@ -867,7 +864,7 @@ namespace IoT {
                 const p2 = t3[1]
                 const p3 = t3[2]
                 s = "" // TODO waarom ??
-                basic.showString("" + cmd + (p1))
+                //basic.showString("" + cmd + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
             if (t0.length == 2) {
@@ -894,7 +891,6 @@ namespace IoT {
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
             if (cmd == "setId") {
-                basic.showString("i="+p1)
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
             if (cmd == "who") {
