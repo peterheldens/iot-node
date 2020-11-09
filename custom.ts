@@ -551,7 +551,7 @@ namespace IoT {
     // Start IoT Client
     ///////////////////
     let radioGroup = 101
-    let identity = -1
+    export let identity = -1
     let doProperty = true
     let doD2C = true
     let doDebug = true
