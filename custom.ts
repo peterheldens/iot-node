@@ -799,6 +799,7 @@ namespace IoT {
         //incoming request from Gateway with new C2D request
         if (deviceMode==Mode.EndPoint) {
             doCommands = true //TODO: kan dit niet gewoon weg ? Was voor handshake ...
+            led.plot(0, 0)
             processC2D(receivedString)
         }
     })
@@ -853,7 +854,7 @@ namespace IoT {
                 const p2 = t3[1]
                 const p3 = t3[2]
                 s = "" // TODO waarom ??
-                //basic.showString("" + cmd + (p1))
+                basic.showString("" + cmd + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
             if (t0.length == 2) {
