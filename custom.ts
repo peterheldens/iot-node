@@ -506,8 +506,8 @@ namespace IoT {
                 debug("skipped: " + text + ":" + num)
             }
             if (JSON.includes("eom")) {
-                JSON = JSON.substr(0, JSON.length - 1)
-                JSON = "" + JSON + "}"
+                JSON = JSON.substr(0, JSON.length - 9) // 9=length of ,"eom":1,
+                JSON = "" + JSON + "}}"
                 //debug("eom telemetry")
                 led.plot(device_registrar.indexOf(sn), 4)
                 serial.writeLine(JSON)
