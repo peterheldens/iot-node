@@ -334,6 +334,7 @@ namespace IoT {
     }
 
     radio.onReceivedValue(function (name, value) {
+        led.toggle(0, 0)
         if (deviceMode==Mode.Gateway) {
             debug("radio.onReceivedValue(" + name + "," + value + ")")
             setTimerRadioRequest() // waarom is dit nog nodig ?
@@ -410,6 +411,17 @@ namespace IoT {
                     gatewaySendProperty(sn, name, value)
                 }
                 led.unplot(id, 3)
+            }
+        }
+        //incoming Handshake request from Gateway to deliver D2C Telemetry, etc.
+        if (deviceMode==Mode.EndPoint) {
+            if (identity >= 0) {
+                if (name == "token" && value == control.deviceSerialNumber()) {
+                    leafSendTelemetry()
+                    leafSendProperty()
+                    //leafSendDebug()
+                    leafSendEndOfMessage()
+                }
             }
         }
     })
@@ -804,6 +816,7 @@ namespace IoT {
         }
     })
 
+/*
     radio.onReceivedValue(function (name, value) {
         //incoming Handshake request from Gateway to deliver D2C Telemetry, etc.
         if (deviceMode==Mode.EndPoint) {
@@ -817,7 +830,7 @@ namespace IoT {
             }
         }
     })
-
+*/
 
    
     /////////////////
