@@ -487,7 +487,39 @@ namespace IoT {
         }
     }
 
-    function gatewaySendTelemetry (sn: number, text: string, num: number) {
+        function gatewaySendTelemetry (sn: number, text: string, num: number) {
+        // assemble data object and send as JSON String to ComPort
+        if (deviceMode==Mode.Gateway) {
+            //microbit_ID = device_registrar.indexOf(sn)
+            //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
+            let JSON=""
+            JSON = device_telemetry[microbit_ID]
+            /*
+            if (JSON.includes("}")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + ","
+            }
+            */
+            if (JSON.includes("id") || text == "id") {
+                JSON = "" + JSON + "\"" + text + "\"" + ":" + num + ","
+            } else {
+                debug("skipped: " + text + ":" + num)
+            }
+            if (JSON.includes("eom")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + "}"
+                //debug("eom telemetry")
+                led.plot(device_registrar.indexOf(sn), 4)
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                led.unplot(device_registrar.indexOf(sn), 4)
+                JSON = init_telemetry
+            }
+            device_telemetry[microbit_ID] = JSON
+        }
+    }
+
+    function gatewaySendTelemetryOld (sn: number, text: string, num: number) {
         // assemble data object and send as JSON String to ComPort
         if (deviceMode==Mode.Gateway) {
             //microbit_ID = device_registrar.indexOf(sn)
