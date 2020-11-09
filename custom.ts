@@ -879,6 +879,7 @@ namespace IoT {
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
             if (cmd == "setId") {
+                basic.showString("i="+p1)
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
             if (cmd == "who") {
