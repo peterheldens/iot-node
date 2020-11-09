@@ -335,10 +335,10 @@ namespace IoT {
 
     radio.onReceivedValue(function (name, value) {
         if (deviceMode==Mode.Gateway) {
-            //debug("radio.onReceivedValue(" + name + "," + value + ")")
+            debug("radio.onReceivedValue(" + name + "," + value + ")")
             setTimerRadioRequest() // waarom is dit nog nodig ?
             const sn = radio.receivedPacket(RadioPacketProperty.SerialNumber)
-            //debug("radio.onReceivedValue() > sn",sn)
+            debug("radio.onReceivedValue() > sn",sn)
             if((name=="register") || (name=="del")) {
                 if (name == "register") {
                         addMicrobit(sn)
@@ -347,7 +347,7 @@ namespace IoT {
                 }
             } else {
                 const id = device_registrar.indexOf(sn)
-                //  debug("radio.onReceivedValue() > id",id)
+                debug("radio.onReceivedValue() > id",id)
                 led.plot(id, 3)
                 if (name == "id") {
                     gatewaySendTelemetry(sn, "id", value)
