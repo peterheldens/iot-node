@@ -65,6 +65,7 @@ namespace IoT {
     const init_telemetry    = "{\"topic\":\"telemetry\", \"payload\":{}}"
     const init_property     = "{\"topic\":\"property\", \"payload\":{}}"
     const init_log          = "{\"topic\":\"device_log\", \"payload\":{}}"
+    const init_debug        = "{\"topic\":\"debug\", \"payload\":{}}"
 
     let device_telemetry    : string[] = []
     let device_property     : string[] = []
@@ -291,7 +292,8 @@ namespace IoT {
         // send Gateway debug info as JSON string from to ComPort
         if (deviceMode==Mode.Gateway) {
             if (showDebug) {
-                const topic = "{\"topic\":\"debug\","
+                //const topic = "{\"topic\":\"debug\","
+                const topic = "{\"topic\":\"debug\",\"payload\":{"+s+"="+v+"}}"
                 const t1 = ""+ "\"debug\": \"" + s
                 let v1=""
                 if (v != null) {
@@ -299,7 +301,8 @@ namespace IoT {
                 } else {
                     v1 = "\"}"
                 }
-                serial.writeLine(topic + t1 + v1)
+                //serial.writeLine(topic + t1 + v1)
+                serial.writeLine(topic)
                 basic.pause(20)
             }
         }
