@@ -62,10 +62,9 @@ namespace IoT {
     const init_property     = "{\"topic\":\"property\"}"
     const init_log          = "{\"topic\":\"device_log\"}"
 */
-    const init_telemetry    = "{\"topic\":\"telemetry\", \"payload\":{}}"
-    const init_property     = "{\"topic\":\"property\", \"payload\":{}}"
-    const init_log          = "{\"topic\":\"device_log\", \"payload\":{}}"
-    const init_debug        = "{\"topic\":\"debug\", \"payload\":{}}"
+    const init_telemetry    = "{\"topic\":\"telemetry\", \"payload\":{}"
+    const init_property     = "{\"topic\":\"property\", \"payload\":{}"
+    const init_log          = "{\"topic\":\"device_log\", \"payload\":{}"
 
     let device_telemetry    : string[] = []
     let device_property     : string[] = []
