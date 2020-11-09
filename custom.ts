@@ -799,7 +799,7 @@ namespace IoT {
         //incoming request from Gateway with new C2D request
         if (deviceMode==Mode.EndPoint) {
             doCommands = true //TODO: kan dit niet gewoon weg ? Was voor handshake ...
-            led.plot(0, 0)
+            led.toggle(0, 0)
             processC2D(receivedString)
         }
     })
