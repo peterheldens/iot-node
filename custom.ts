@@ -335,7 +335,7 @@ namespace IoT {
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-                setTimerRadioRequest(5000)
+                setTimerRadioRequest(10000)
                 basic.pause(500)
             }
         }
@@ -939,7 +939,7 @@ namespace IoT {
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
             if (cmd == "setId") {
-                basic.showString("ik")
+                //basic.showString("ik")
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
             if (cmd == "who") {
@@ -1049,7 +1049,7 @@ namespace IoT {
     }
 
     function setIdentity (i: number, v: number) {
-        basic.showString("si")
+        //basic.showString("si")
         if (v == control.deviceSerialNumber()) {
             identity = i
             who()
@@ -1073,6 +1073,7 @@ namespace IoT {
     }
 
     function who () {
+        //basic.showString("who")
         basic.showNumber(identity)
     }
 
