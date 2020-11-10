@@ -301,8 +301,8 @@ namespace IoT {
                     v1 = "\"}"
                 }
                 serial.writeLine(topic + t1 + v1)
-                basic.pause(20)
-                serial.writeLine("")
+                basic.pause(200)
+                //serial.writeLine("")
                 basic.pause(200)
             }
         }
