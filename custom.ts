@@ -82,7 +82,7 @@ namespace IoT {
     let timerGatewayRequest = 0
 
     let microbit_ID = 0 // this is the index of the EndPoint to be processed using the HandShake
-    let delay = 20
+    let delay = 200
     let activeRadioRequest = false
 
     //init Radio
@@ -303,7 +303,7 @@ namespace IoT {
                 serial.writeLine(topic + t1 + v1)
                 basic.pause(20)
                 serial.writeLine("")
-                basic.pause(20)
+                basic.pause(200)
             }
         }
     }
