@@ -539,7 +539,9 @@ namespace IoT {
             if (JSON.includes("eom")) {
                 //debug("eom telemetry")
                 led.plot(device_registrar.indexOf(sn), 4)
-                serial.writeLine(JSON+"\n")
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                serial.writeLine(JSON)
                 basic.pause(delay)
                 led.unplot(device_registrar.indexOf(sn), 4)
                 JSON = init_telemetry
