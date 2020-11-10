@@ -408,7 +408,7 @@ namespace IoT {
                     gatewaySendTelemetry(sn, "temperature", value)
                 } else if (name == "eom") {
                     gatewaySendTelemetry(sn, "eom", value)
-                    //gatewaySendProperty(sn, "eom", value) // TODO: klopt dit wel?
+                    gatewaySendProperty(sn, "eom", value) // TODO: klopt dit wel?
                     //gatewaySendLog(sn, "eom", value)
                     activeRadioRequest = false
                 } else if (name.substr(0, 2) == "d:") {
@@ -913,7 +913,7 @@ namespace IoT {
                 const p2 = t3[1]
                 const p3 = t3[2]
                 s = "" // TODO waarom ??
-                //basic.showString("" + cmd + (p1))
+                basic.showString("" + cmd + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
             if (t0.length == 2) {
@@ -940,6 +940,7 @@ namespace IoT {
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
             if (cmd == "setId") {
+                basic.showString("ik")
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
             if (cmd == "who") {
@@ -1049,6 +1050,7 @@ namespace IoT {
     }
 
     function setIdentity (i: number, v: number) {
+        basic.showString("si")
         if (v == control.deviceSerialNumber()) {
             identity = i
             who()
