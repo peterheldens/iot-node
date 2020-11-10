@@ -325,10 +325,10 @@ namespace IoT {
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 setTimerRadioRequest(1000)
                 setTimerGatewayRequest(1000)
-                // basic.pause(500)
+                basic.pause(500)  //TODO dit kan weg?
             } else {
                 debug("id >= 0") 
-                /*
+                
                 // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
                 device_telemetry[id] = init_telemetry
                 debug("init_telemetry["+id+"] = "+device_telemetry[id] )
@@ -337,7 +337,7 @@ namespace IoT {
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 setTimerRadioRequest(1000)
                 basic.pause(500)
-                */
+                
             }
         }
     }
