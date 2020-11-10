@@ -349,7 +349,7 @@ namespace IoT {
             debug("radio.onReceivedValue() > sn",sn)
             if((name=="register") || (name=="del")) {
                 if (name == "register") {
-                        addMicrobit(value) // hier stond sn
+                        addMicrobit(sn) // hier stond sn
                 } else if (name == "del") {
                         delMicrobit(sn)
                 }
@@ -745,7 +745,7 @@ namespace IoT {
     export function registerDevice () {
         basic.clearScreen()
         if (identity < 0) {
-            radio.sendValue("register", control.deviceSerialNumber())
+            radio.sendValue("register", 0)
             /*
             while (identity < 0) {
                 radio.sendValue("register", control.deviceSerialNumber())
