@@ -335,9 +335,8 @@ namespace IoT {
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-                setTimerRadioRequest(1000)
+                setTimerRadioRequest(5000)
                 basic.pause(500)
-                
             }
         }
     }
