@@ -1052,8 +1052,9 @@ namespace IoT {
     }
 
     function setIdentity (i: number, v: number) {
-        //basic.showString("si")
+        basic.showString("si")
         if (v == control.deviceSerialNumber()) {
+            basic.showIcon(IconNames.Heart)
             identity = i
             who()
         }
