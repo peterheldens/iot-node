@@ -281,8 +281,8 @@ namespace IoT {
             if (id >= 0) {
                 if (device_telemetry[id] != null) { // TODO:veranderen in functie die zegt of device active is
                     device_telemetry[id] = null
-                    radio.sendString("setId(-1," + sn + ")")
-                    debug("delMicrobit > radio.sendString > setId(-1,sn)", sn)
+                    radio.sendString("sid(-1," + sn + ")")
+                    debug("delMicrobit > radio.sendString > sid(-1,sn)", sn)
                 }
             }
         }
@@ -321,8 +321,8 @@ namespace IoT {
                 device_telemetry.push(init_telemetry)
                 device_property.push(init_property)
                 device_log.push(init_log)
-                radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-                debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                radio.sendString("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                debug("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 setTimerRadioRequest(1000)
                 setTimerGatewayRequest(1000)
                 basic.pause(500)  //TODO dit kan weg?
@@ -332,9 +332,9 @@ namespace IoT {
                 // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
                 device_telemetry[id] = init_telemetry
                 //debug("init_telemetry["+id+"] = "+device_telemetry[id] )
-                debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-                radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
-                debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                debug("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                radio.sendString("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                debug("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 setTimerRadioRequest(10000)
                 basic.pause(500)
             }
@@ -941,7 +941,7 @@ namespace IoT {
             // run this once and wait for new HandShake from Leaf Device
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
-            if (cmd == "setId") {
+            if (cmd == "sid") {
                 //basic.showString("ik")
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
