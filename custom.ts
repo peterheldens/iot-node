@@ -748,7 +748,7 @@ namespace IoT {
             while (identity < 0) {
                 radio.sendValue("register", control.deviceSerialNumber())
                 led.toggle(2, 2)
-                basic.pause(200)
+                basic.pause(1000)
             }
         } else {
             basic.showString("already registered")
