@@ -292,8 +292,8 @@ namespace IoT {
         // send Gateway debug info as JSON string from to ComPort
         if (deviceMode==Mode.Gateway) {
             if (showDebug) {
-                //const topic = "{\"topic\":\"debug\","
-                const topic = "{\"topic\":\"debug\",\"payload\":{"+s+"="+v+"}}"
+                const topic = "{\"topic\":\"debug\","
+                //const topic = "{\"topic\":\"debug\",\"payload\":{"+s+"="+v+"}}"
                 const t1 = ""+ "\"debug\": \"" + s
                 let v1=""
                 if (v != null) {
@@ -301,8 +301,8 @@ namespace IoT {
                 } else {
                     v1 = "\"}"
                 }
-                //serial.writeLine(topic + t1 + v1)
-                serial.writeLine(topic)
+                serial.writeLine(topic + t1 + v1)
+                //serial.writeLine(topic)
                 basic.pause(20)
             }
         }
