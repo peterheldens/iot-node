@@ -331,7 +331,7 @@ namespace IoT {
                 
                 // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
                 device_telemetry[id] = init_telemetry
-                debug("init_telemetry["+id+"] = "+device_telemetry[id] )
+                //debug("init_telemetry["+id+"] = "+device_telemetry[id] )
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 radio.sendString("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 debug("setId(" + device_registrar.indexOf(sn) + "," + sn + ")")
