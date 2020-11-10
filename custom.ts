@@ -349,7 +349,7 @@ namespace IoT {
             debug("radio.onReceivedValue() > sn",sn)
             if((name=="register") || (name=="del")) {
                 if (name == "register") {
-                        addMicrobit(sn)
+                        addMicrobit(value) // hier stond sn
                 } else if (name == "del") {
                         delMicrobit(sn)
                 }
