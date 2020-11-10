@@ -57,15 +57,16 @@ namespace IoT {
     let doTelemetry = true
 
     //init D2C data
-    /*
+
     const init_telemetry    = "{\"topic\":\"telemetry\"}"
     const init_property     = "{\"topic\":\"property\"}"
     const init_log          = "{\"topic\":\"device_log\"}"
-*/
+
+/* experiment
     const init_telemetry    = "{\"topic\":\"telemetry\", \"payload\":{"
     const init_property     = "{\"topic\":\"property\", \"payload\":{"
     const init_log          = "{\"topic\":\"device_log\", \"payload\":{"
-
+*/
     let device_telemetry    : string[] = []
     let device_property     : string[] = []
     let device_log          : string[] = []
@@ -487,7 +488,7 @@ namespace IoT {
         }
     }
 
-        function gatewaySendTelemetry (sn: number, text: string, num: number) {
+        function gatewaySendTelemetryExperiment (sn: number, text: string, num: number) {
         // assemble data object and send as JSON String to ComPort
         if (deviceMode==Mode.Gateway) {
             //microbit_ID = device_registrar.indexOf(sn)
@@ -519,7 +520,7 @@ namespace IoT {
         }
     }
 
-    function gatewaySendTelemetryOld (sn: number, text: string, num: number) {
+    function gatewaySendTelemetry (sn: number, text: string, num: number) {
         // assemble data object and send as JSON String to ComPort
         if (deviceMode==Mode.Gateway) {
             //microbit_ID = device_registrar.indexOf(sn)
