@@ -82,7 +82,7 @@ namespace IoT {
     let timerGatewayRequest = 0
 
     let microbit_ID = 0 // this is the index of the EndPoint to be processed using the HandShake
-    let delay = 200
+    let delay = 20
     let activeRadioRequest = false
 
     //init Radio
@@ -301,9 +301,9 @@ namespace IoT {
                     v1 = "\"}"
                 }
                 serial.writeLine(topic + t1 + v1)
-                basic.pause(200)
+                basic.pause(20)
                 //serial.writeLine("")
-                basic.pause(200)
+                //basic.pause(20)
             }
         }
     }
@@ -454,8 +454,8 @@ namespace IoT {
                 led.plot(device_registrar.indexOf(sn), 4)
                 serial.writeLine(JSON)
                 basic.pause(delay)
-                serial.writeLine("")
-                basic.pause(delay)
+                //serial.writeLine("")
+                //basic.pause(delay)
                 led.unplot(device_registrar.indexOf(sn), 4)
                 JSON = init_property
             } 
@@ -483,8 +483,8 @@ namespace IoT {
                 led.plot(device_registrar.indexOf(sn), 4)
                 serial.writeLine(JSON)
                 basic.pause(delay)
-                serial.writeLine("")
-                basic.pause(delay)
+                //serial.writeLine("")
+                //basic.pause(delay)
                 led.unplot(device_registrar.indexOf(sn), 4)
                 JSON = init_log
             }
@@ -517,8 +517,8 @@ namespace IoT {
                 led.plot(device_registrar.indexOf(sn), 4)
                 serial.writeLine(JSON)
                 basic.pause(delay)
-                serial.writeLine("")
-                basic.pause(delay)
+                //serial.writeLine("")
+                //basic.pause(delay)
                 led.unplot(device_registrar.indexOf(sn), 4)
                 JSON = init_telemetry
             }
@@ -548,7 +548,7 @@ namespace IoT {
                 serial.writeLine(JSON)
                 basic.pause(delay)
                 //serial.writeLine("")
-                basic.pause(delay)
+                //basic.pause(delay)
                 led.unplot(device_registrar.indexOf(sn), 4)
                 JSON = init_telemetry
             }
