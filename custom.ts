@@ -410,8 +410,10 @@ function addMicrobitOld (sn: number) {
                 const id = device_registrar.indexOf(sn)
                 debug("radio.onReceivedValue() > id",id)
                 led.plot(id, 3)
-                if (name == "id") {
+                if (name == "id") { //id=identity
                     gatewaySendTelemetry(sn, "id", value)
+                } else if (name == "lid") { //lid=leafIdentity
+                    gatewaySendProperty(sn, "id", value)
                 } else if (name == "sn") {
                     gatewaySendTelemetry(sn, "sn", sn) //waarom abs ?
                 } else if (name == "time") {
@@ -705,6 +707,7 @@ function addMicrobitOld (sn: number) {
         // value pair: (name, value) = (propSting, propValue)
         if (deviceMode==Mode.EndPoint) { 
             if (doProperty) {
+                radio.sendValue("lid", identity)
                 for (let i=0; i<propString.length;i++) {
                     const s=propString[i]
                     const v=propValue[i]
