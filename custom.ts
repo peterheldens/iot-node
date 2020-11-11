@@ -970,7 +970,7 @@ function addMicrobitOld (sn: number) {
                 const p2 = t3[1]
                 const p3 = t3[2]
                 s = "" // TODO waarom ??
-                basic.showString("" + cmd + (p1))
+                //basic.showString("" + cmd + (p1))
                 invokeCommands(cmd, p1,p2,p3)
             }
             if (t0.length == 2) {
@@ -998,37 +998,40 @@ function addMicrobitOld (sn: number) {
             doCommands = false
             if (cmd == "sid") {
                 setIdentity(parseFloat(p1), parseFloat(p2))
-            }
-            if (cmd == "who") {
+            } 
+            else if (cmd == "who") {
                 who()
             }
-            if (cmd == "clear") {
+            else if (cmd == "clear") {
                 clear()
             }
-            if (cmd == "rgb") {
+            else if (cmd == "rgb") {
                 setRGB(parseFloat(p1), parseFloat(p2), parseFloat(p3))
             }
-            if (cmd == "color") {
+            else if (cmd == "color") {
                 setColor(p1)
             }
-            if (cmd == "icon") {
+            else if (cmd == "icon") {
                 setIcon(p1)
             }
-            if (cmd == "reset") {
+            else if (cmd == "reset") {
                 setReset()
             }
-            if (cmd == "brightness") {
+            else if (cmd == "brightness") {
                 setBrightness(parseFloat(p1))
             }
-            if (cmd == "servo") {
+            else if (cmd == "servo") {
                 setServo(parseFloat(p1))
             }
-            if (cmd == "digitalWrite") {
+            else if (cmd == "digitalWrite") {
                 setDigitalPin(parseFloat(p1), parseFloat(p2))
             }
-            if (cmd == "analogWrite") {
+            else if (cmd == "analogWrite") {
                 setAnalogPin(parseFloat(p1), parseFloat(p2))
-            }
+            } 
+            else {
+                setText(cmd,p1,p2,p3)
+            } 
             //TODO reportedproperties = multiple parameters, first check this one.
             //addProperty(cmd, parseFloat(p1))
         }
@@ -1112,8 +1115,21 @@ function addMicrobitOld (sn: number) {
         }
     }
 
-    function setText (text: string) {
-        basic.showString(text)
+    function setText (text: string,p1?:string, p2?:string,p3?:string) {
+        let s=text;
+        if (p1!=null) {
+            s=s+"("+p1
+        }
+        if (p2!=null) {
+            s=s+","+p2
+        }
+        if (p3!=null) {
+            s=s+","+p3
+        }
+        if (p1!=null) {
+            s=s+")"
+        }
+        basic.showString(s)
     }
 
     function clear () {
