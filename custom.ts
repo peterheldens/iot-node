@@ -325,7 +325,7 @@ namespace IoT {
         // add EndPoint device to the device registrar
         if (deviceMode==Mode.Gateway) {
             const id = device_registrar.indexOf(sn)
-            const setIdentityCmd = "sid(" + id + "," + sn + ")"
+            //const setIdentityCmd = "sid(" + id + "," + sn + ")"
             debug("addMicrobit("+sn+")")
             debug("id",id)
             if (id < 0) {
@@ -335,15 +335,13 @@ namespace IoT {
                 device_telemetry.push(init_telemetry)
                 device_property.push(init_property)
                 device_log.push(init_log)
-                if (identity !=0) {
-                    // this request is not from the gateway itself
-                    radioSendMessage(setIdentityCmd)
-                    debug(setIdentityCmd)
-                    setTimerRadioRequest(1000)
-                    setTimerGatewayRequest(1000)
-                    basic.pause(500)  //TODO dit kan weg?
-                }
-
+                // we have a new id now ...
+                const newId = device_registrar.indexOf(sn)
+                radioSendMessage("sid(" + newId + "," + sn + ")")
+                debug("sid(" + newId + "," + sn + ")")
+                setTimerRadioRequest(1000)
+                setTimerGatewayRequest(1000)
+                basic.pause(500)  //TODO dit kan weg?
             } else {
                 /*
                 debug("id >= 0") 
