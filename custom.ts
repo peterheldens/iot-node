@@ -25,6 +25,8 @@
  *  https://makecode.com/playground
  * 
  * TODO: 
+ * [0] change radio.sendValue to radioSendCommand /w value limit to 8 chars
+ * [0] remove init_log 
  * [x] gateway: enable property
  * [x] endpoint: enable telemetry switch for EndPoint
  * [0] endpoint: remove debug
@@ -151,6 +153,16 @@ namespace IoT {
             }
         }
     }
+
+    function radioSendMessage(m: string) {
+        if (m.length <=19) {
+            radio.sendString(m)
+        } else {
+            basic.showString("m>19")
+            basic.pause(10000)
+            //TODO - log error to console here
+        }
+    }
   
     function request_next_mb () {
         // request data from the next microbit using handshake & round robin
@@ -253,7 +265,7 @@ namespace IoT {
         }
     }
 
-       function gatewaySubmitPropertyOld () {
+    function gatewaySubmitPropertyOld () {
         // gateway to submit property
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
@@ -282,6 +294,7 @@ namespace IoT {
                 if (device_telemetry[id] != null) { // TODO:veranderen in functie die zegt of device active is
                     device_telemetry[id] = null
                     radio.sendString("sid(-1," + sn + ")")
+                    //radioSendMessage(serialRead)
                     debug("delMicrobit > radio.sendString > sid(-1,sn)", sn)
                 }
             }
@@ -312,6 +325,40 @@ namespace IoT {
         // add EndPoint device to the device registrar
         if (deviceMode==Mode.Gateway) {
             const id = device_registrar.indexOf(sn)
+            const setIdentityCmd = "sid(" + id + "," + sn + ")"
+            debug("addMicrobit("+sn+")")
+            debug("id",id)
+            if (id < 0) {
+                debug("id < 0")
+                // device does not exist yet, add new device
+                device_registrar.push(sn)
+                device_telemetry.push(init_telemetry)
+                device_property.push(init_property)
+                device_log.push(init_log)
+                radioSendMessage(setIdentityCmd)
+                debug(setIdentityCmd)
+                setTimerRadioRequest(1000)
+                setTimerGatewayRequest(1000)
+                basic.pause(500)  //TODO dit kan weg?
+            } else {
+                debug("id >= 0") 
+                
+                // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
+                device_telemetry[id] = init_telemetry
+                //debug("init_telemetry["+id+"] = "+device_telemetry[id] )
+                debug(setIdentityCmd)
+                radioSendMessage(setIdentityCmd)
+                debug(setIdentityCmd)
+                setTimerRadioRequest(10000)
+                basic.pause(500)
+            }
+        }
+    }
+
+function addMicrobitOld (sn: number) {
+        // add EndPoint device to the device registrar
+        if (deviceMode==Mode.Gateway) {
+            const id = device_registrar.indexOf(sn)
             debug("addMicrobit("+sn+")")
             debug("id",id)
             if (id < 0) {
@@ -322,6 +369,7 @@ namespace IoT {
                 device_property.push(init_property)
                 device_log.push(init_log)
                 radio.sendString("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                //radioSendMessage(serialRead)
                 debug("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 setTimerRadioRequest(1000)
                 setTimerGatewayRequest(1000)
@@ -334,12 +382,14 @@ namespace IoT {
                 //debug("init_telemetry["+id+"] = "+device_telemetry[id] )
                 debug("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 radio.sendString("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
+                //radioSendMessage(serialRead)
                 debug("sid(" + device_registrar.indexOf(sn) + "," + sn + ")")
                 setTimerRadioRequest(10000)
                 basic.pause(500)
             }
         }
     }
+
 
     radio.onReceivedValue(function (name, value) {
         if (deviceMode==Mode.Gateway) {
@@ -565,7 +615,8 @@ namespace IoT {
                 // C2D command is generic to all EndPoint devices
                 if (t0.length == 1) {
                     processC2D(serialRead) //TODO: alleen als doCommands=true?
-                    radio.sendString(serialRead)
+                    //radio.sendString(serialRead)
+                    radioSendMessage(serialRead)
                     debug("serial.onDataReceived() > radio.sendString("+ serialRead+")")
                 }
                 if (t0.length == 2) {
@@ -575,7 +626,8 @@ namespace IoT {
                         // convert EndPoint devices N:1 
                         const cmd = "" + t1[i] + ":" + t0[1]
                         processC2D(cmd) //TODO: alleen als doCommands=true?
-                        radio.sendString(cmd)
+                        //radio.sendString(cmd)
+                        radioSendMessage(cmd)
                         debug("serial.onDataReceived() > radio.sendString("+cmd+")")
                         basic.pause(20)
                     }
