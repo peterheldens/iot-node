@@ -341,7 +341,7 @@ namespace IoT {
                 setTimerGatewayRequest(1000)
                 basic.pause(500)  //TODO dit kan weg?
             } else {
-                debug("id >= 0") 
+                debug("id > 0") 
                 
                 // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
                 device_telemetry[id] = init_telemetry
