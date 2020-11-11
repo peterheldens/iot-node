@@ -289,12 +289,12 @@ namespace IoT {
             //TODO - continue here ...
             debug("delMicrobit() > sn", sn)
             const id = device_registrar.indexOf(sn)
+            const setIdentityCmd = "sid(-1," + sn + ")"
             debug("delMicrobit() > id", id)
             if (id >= 0) {
                 if (device_telemetry[id] != null) { // TODO:veranderen in functie die zegt of device active is
                     device_telemetry[id] = null
-                    radio.sendString("sid(-1," + sn + ")")
-                    //radioSendMessage(serialRead)
+                    radioSendMessage(setIdentityCmd)
                     debug("delMicrobit > radio.sendString > sid(-1,sn)", sn)
                 }
             }
@@ -349,7 +349,7 @@ namespace IoT {
                 debug(setIdentityCmd)
                 radioSendMessage(setIdentityCmd)
                 debug(setIdentityCmd)
-                setTimerRadioRequest(10000)
+                setTimerRadioRequest(10000)  //TO reduce this
                 basic.pause(500)
             }
         }
@@ -994,7 +994,6 @@ function addMicrobitOld (sn: number) {
             // doCommands is set in radio.onReceivedString(function (receivedString))
             doCommands = false
             if (cmd == "sid") {
-                //basic.showString("ik")
                 setIdentity(parseFloat(p1), parseFloat(p2))
             }
             if (cmd == "who") {
@@ -1104,10 +1103,7 @@ function addMicrobitOld (sn: number) {
     }
 
     function setIdentity (i: number, v: number) {
-        basic.showString("si ")
-        basic.showNumber(v)
         if (v == control.deviceSerialNumber()) {
-            basic.showIcon(IconNames.Heart)
             identity = i
             who()
         }
@@ -1130,7 +1126,6 @@ function addMicrobitOld (sn: number) {
     }
 
     function who () {
-        //basic.showString("who")
         basic.showNumber(identity)
     }
 
