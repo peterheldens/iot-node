@@ -1117,16 +1117,16 @@ function addMicrobitOld (sn: number) {
 
     function setText (text: string,p1?:string, p2?:string,p3?:string) {
         let s=text;
-        if (p1!=null) {
+        if (p1!="") {
             s=s+"("+p1
         }
-        if (p2!=null) {
+        if (p2!="") {
             s=s+","+p2
         }
-        if (p3!=null) {
+        if (p3!="") {
             s=s+","+p3
         }
-        if (p1!=null) {
+        if (p1!="") {
             s=s+")"
         }
         basic.showString(s)
