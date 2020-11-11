@@ -460,7 +460,7 @@ function addMicrobitOld (sn: number) {
                     gatewaySendTelemetry(sn, "temperature", value)
                 } else if (name == "eom") {
                     gatewaySendTelemetry(sn, "eom", value)
-                    gatewaySendProperty(sn, "eom", value) // TODO: klopt dit wel?
+                    //gatewaySendProperty(sn, "eom", value) // TODO: klopt dit wel?
                     //gatewaySendLog(sn, "eom", value)
                     activeRadioRequest = false
                 } else if (name.substr(0, 2) == "d:") {
