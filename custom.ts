@@ -335,14 +335,18 @@ namespace IoT {
                 device_telemetry.push(init_telemetry)
                 device_property.push(init_property)
                 device_log.push(init_log)
-                radioSendMessage(setIdentityCmd)
-                debug(setIdentityCmd)
-                setTimerRadioRequest(1000)
-                setTimerGatewayRequest(1000)
-                basic.pause(500)  //TODO dit kan weg?
+                if (identity !=0) {
+                    // this request is not from the gateway itself
+                    radioSendMessage(setIdentityCmd)
+                    debug(setIdentityCmd)
+                    setTimerRadioRequest(1000)
+                    setTimerGatewayRequest(1000)
+                    basic.pause(500)  //TODO dit kan weg?
+                }
+
             } else {
-                debug("id > 0") 
-                
+                /*
+                debug("id >= 0") 
                 // device exists already, device_telemetry=null, reactivate it by setting device_telemetry to "{"
                 device_telemetry[id] = init_telemetry
                 //debug("init_telemetry["+id+"] = "+device_telemetry[id] )
@@ -351,6 +355,7 @@ namespace IoT {
                 debug(setIdentityCmd)
                 setTimerRadioRequest(10000)  //TO reduce this
                 basic.pause(500)
+                */
             }
         }
     }
