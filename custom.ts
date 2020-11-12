@@ -51,6 +51,7 @@ enum Mode {
 
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
+    
     export class Property {
         private value : number
 
@@ -58,12 +59,15 @@ namespace IoT {
          this.value = 0 
         }
     }
-    //%block="add property | name = $name | value = $value"
+    export let propertyArray: Property[] = []
+
+    //%block="add property | value = $value"
     //% weight=100
     //% group="General"
     //% blockSetVariable=property
-    export function createProperty(name:String, value: Number): Property {
+    export function createProperty(value: Number): Property {
         let property = new Property();
+        propertyArray.push(property);
         return property
     }
 
