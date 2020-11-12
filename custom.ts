@@ -77,7 +77,7 @@ namespace IoT {
         //% v.defl=0
         //% group="General"
         update(v:number) {
-            this.set(this.get()+v);
+            this.set(this.value+v);
         }
         
     }
@@ -299,8 +299,8 @@ namespace IoT {
                 const sn = control.deviceSerialNumber()
                 gatewaySendProperty(sn,"id", microbit_ID)
                 for (let i=0; i<propertyArray.length;i++) { 
-                    const n=propertyArray[i].name
-                    const v=propertyArray[i].value
+                    const n = propertyArray[i].name
+                    const v = propertyArray[i].value
                     gatewaySendProperty(sn,n,v)
                 }   
                 gatewaySendProperty(sn,"eom", 1)
@@ -771,7 +771,7 @@ function addMicrobitOld (sn: number) {
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
         if (deviceMode==Mode.EndPoint) { 
-            if (doProperty) {
+            if ((doProperty) && (propertyArray.length > 0)) {
                 radio.sendValue("lid", identity)
                 for (let i=0; i<propertyArray.length;i++) { 
                     const p=propertyArray[i]
