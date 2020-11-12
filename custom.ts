@@ -61,7 +61,8 @@ namespace IoT {
     }
     export let propertyArray: Property[] = []
 
-    //%block
+
+    //%block="create property $this(property) value= $value"
     //% weight=100
     //% group="General"
     //% blockSetVariable=property
