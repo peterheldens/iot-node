@@ -51,7 +51,7 @@ enum Mode {
 
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
-    export class property {
+    export class Property {
         private value : number
 
         constructor() {
@@ -59,7 +59,11 @@ namespace IoT {
         }
     }
 
-
+    //% block="new property %type"
+    export function createProperty(): Property {
+        let property = new Property();
+        return property
+    }
 
     //////////////////
     // Start IoT_gateway
