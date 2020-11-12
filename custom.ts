@@ -60,7 +60,7 @@ namespace IoT {
     }
 
     //% block="new property %type"
-    export function createProperty(): Property {
+    export function createProperty(name:String, value: Number): Property {
         let property = new Property();
         return property
     }
