@@ -66,7 +66,7 @@ namespace IoT {
         }
 
         //% block=" $v"
-        //% blockSetVariable=p
+        // blockSetVariable=p
         //% weight=100
         //% group="General"
         public createProperty(v: number) {
