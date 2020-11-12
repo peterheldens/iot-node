@@ -58,9 +58,10 @@ namespace IoT {
          this.value = 0 
         }
     }
-    //%block="submit property | name = $name | value = $value"
+    //%block="add property | name = $name | value = $value"
     //% weight=100
     //% group="General"
+    //% blockSetVariable=property
     export function createProperty(name:String, value: Number): Property {
         let property = new Property();
         return property
