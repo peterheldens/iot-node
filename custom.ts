@@ -51,6 +51,16 @@ enum Mode {
 
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
+    export class property {
+        private value : number
+
+        constructor() {
+         this.value = 0 
+        }
+    }
+
+
+
     //////////////////
     // Start IoT_gateway
     //////////////////
