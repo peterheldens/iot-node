@@ -295,7 +295,7 @@ namespace IoT {
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
         if (deviceMode==Mode.Gateway) { 
-            if ((doProperty) && (propString.length > 0)) {
+            if ((doProperty) && (propertyArray.length > 0)) {
                 const sn = control.deviceSerialNumber()
                 gatewaySendProperty(sn,"id", microbit_ID)
                 for (let i=0; i<propertyArray.length;i++) { 
