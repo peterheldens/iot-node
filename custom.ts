@@ -66,14 +66,14 @@ namespace IoT {
             return this.value;
         }
 
-        //% block="%property set value by %v"
+        //% block="%property set value to %v"
         //% v.defl=0
         //% group="General"
         set(v:number) {
             this.value = v;
         }
 
-        //% block="%property update value to %v"
+        //% block="%property change value by %v"
         //% v.defl=0
         //% group="General"
         update(v:number) {
