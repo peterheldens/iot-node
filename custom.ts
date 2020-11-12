@@ -58,18 +58,21 @@ namespace IoT {
         constructor() {
          this.value = 0 
         }
+
+             // blockSetVariable=property
+
+        //%block="property $this(property) to $v"
+        //% weight=100
+        //% group="General"
+        public createProperty(v: number): Property {
+            let property = new Property();
+            propertyArray.push(property);
+            return property
+        }
     }
     export let propertyArray: Property[] = []
 
-    //%block="property $this(property) value $v"
-    //% weight=100
-    //% group="General"
-    // blockSetVariable=property
-    export function createProperty(v: Number): Property {
-        let property = new Property();
-        propertyArray.push(property);
-        return property
-    }
+
 
     //////////////////
     // Start IoT_gateway
