@@ -59,9 +59,14 @@ namespace IoT {
          this.value = 0 
         }
 
-             // blockSetVariable=property
+        //% block="property $this(property) to $m"
+        public createprop(m: number) : Property {
+            let property = new Property();
+            return property
+        }
 
-        //%block="property $this(property) to $v"
+        //% block="property $this(property) to $v"
+        //% blockSetVariable=property
         //% weight=100
         //% group="General"
         public createProperty(v: number): Property {
