@@ -62,7 +62,7 @@ namespace IoT {
 
         //% block="%property | value"
         //% group="General"
-        get(p: Property) : number {
+        get() : number {
             return this.value;
         }
 
@@ -77,7 +77,7 @@ namespace IoT {
         //% v.defl=0
         //% group="General"
         update(v:number) {
-            this.value = this.value+v;
+            this.set(this.get()+v);
         }
         
     }
