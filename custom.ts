@@ -52,14 +52,13 @@ enum Mode {
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
     export class Property {
-        
+        name: string
         value : number
 
-        constructor() {
-         this.value = undefined
+        constructor(name:string, value: number) {
+            this.name = name
+            this.value = value
         }
-
-
 
         //% block="%property | value"
         //% group="General"
@@ -84,28 +83,15 @@ namespace IoT {
     }
     export let propertyArray: Property[] = []
         
-        //% block="create property"
+        //% block="create property|name %name|value %value"
         //% v.defl=0
         //% blockSetVariable=property
         //% group="General"
-        export function create(): Property {
-            let p = new Property();
+        export function create(name:string, value: number): Property {
+            let p = new Property(name, value);
             propertyArray.push(p);
             return p
             }
-/*
-        //% block="reported property %v"
-        //% v.defl=0
-        //% blockSetVariable=property
-        export function create(v: number) : Property {
-            let p = new Property();
-            propertyArray.push(p);
-            return p
-          }
-*/
- 
-
-
 
     //////////////////
     // Start IoT_gateway
@@ -304,6 +290,24 @@ namespace IoT {
     }
 
     function gatewaySubmitProperty () {
+        // gateway to submit property
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.Gateway) { 
+            if ((doProperty) && (propString.length > 0)) {
+                const sn = control.deviceSerialNumber()
+                gatewaySendProperty(sn,"id", microbit_ID)
+                for (let i=0; i<propertyArray.length;i++) { 
+                    const n=propertyArray[i].name
+                    const v=propertyArray[i].value
+                    gatewaySendProperty(sn,n, v)
+                }   
+                gatewaySendProperty(sn,"eom", 1)
+            }
+        }
+    }
+
+        function gatewaySubmitPropertyOld1 () {
         // gateway to submit property
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
@@ -763,6 +767,21 @@ function addMicrobitOld (sn: number) {
     // submit object.value
 
     function leafSendProperty () {
+        // send device property value pairs to the cloud
+        // value pair: (name, value) = (propSting, propValue)
+        if (deviceMode==Mode.EndPoint) { 
+            if (doProperty) {
+                radio.sendValue("lid", identity)
+                for (let i=0; i<propertyArray.length;i++) { 
+                    const p=propertyArray[i]
+                    radio.sendValue(p.name, p.value)
+                    basic.pause(delay)
+                }   
+            }
+        }
+    }
+
+        function leafSendPropertyOld1 () {
         // send device property value pairs to the cloud
         // value pair: (name, value) = (propSting, propValue)
         if (deviceMode==Mode.EndPoint) { 
