@@ -51,7 +51,8 @@ enum Mode {
 
 //% weight=100 color=#0fbc11 icon=""
 namespace IoT {
-    export class Robot {
+    
+    export class Property {
         /*
         private value : number
 
@@ -60,21 +61,23 @@ namespace IoT {
         }
         */
 
-        //% block="property $this(property) to $v"
-        public createprop(v: number) {
- 
+        //% block="pr $this(pr) to $m"
+        public createprop(m: number) {
+            let property = new Property();
+            return property
         }
 
-        //% block=" $v"
+        //% block="p $this(p) to $v"
         //% blockSetVariable=p
         //% weight=100
         //% group="General"
         public createProperty(v: number) {
-            let property = new Robot();
+            let property = new Property();
             propertyArray.push(property);
-         }
+            return property
+        }
     }
-    export let propertyArray: Robot[] = []
+    export let propertyArray: Property[] = []
 
 
 
