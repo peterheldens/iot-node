@@ -60,18 +60,18 @@ namespace IoT {
         }
         
 
-        //% block="property $this(property) to $v"
+        //% block="property $this(property) to %v"
         public createprop(v: number) {
             let r = new Robot();
         }
 
-        //% block=" $v"
-        // blockSetVariable=p
-        //% weight=100
-        //% group="General"
-        public createProperty(v: number) {
+        //% block="property %v eenheden"
+        //% v.defl=0
+        //% BlockSetVariable=property
+        public createProperty(v: number) : Robot {
             let property = new Robot();
             propertyArray.push(property);
+            return property
           }
     }
     export let propertyArray: Robot[] = []
