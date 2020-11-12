@@ -53,23 +53,25 @@ enum Mode {
 namespace IoT {
     
     export class Property {
+        /*
         private value : number
 
         constructor() {
          this.value = 0 
         }
+        */
 
-        //% block="property $this(property) to $m"
-        public createprop(m: number) : Property {
+        //% block="pr $this(pr) to $m"
+        public createprop(m: number) {
             let property = new Property();
             return property
         }
 
-        //% block="property $this(property) to $v"
-        //% blockSetVariable=property
+        //% block="p $this(p) to $v"
+        //% blockSetVariable=p
         //% weight=100
         //% group="General"
-        public createProperty(v: number): Property {
+        public createProperty(v: number) {
             let property = new Property();
             propertyArray.push(property);
             return property
