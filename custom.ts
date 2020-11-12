@@ -59,10 +59,10 @@ namespace IoT {
          this.value = 0 
         }
 
-        //% block="reported property =$v"
+        //% block="%property"
         //% v.defl=0
         //% blockSetVariable=property
-        create(v: number) : Property {
+        create(v: number) : Property{
             let p = new Property();
             propertyArray.push(p);
             return p
