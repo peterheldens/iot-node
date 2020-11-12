@@ -55,32 +55,41 @@ namespace IoT {
         
         value : number
 
-        constructor(v:number) {
-         this.value = v
+        constructor() {
+         this.value = undefined
         }
 
 
 
-        //% block="%property | value" blockGap=8
+        //% block="%property | value"
+        //% group="General"
         get(p: Property) : number {
             return this.value;
         }
 
-        //% block="%property set value = %v"
+        //% block="%property set value by %v"
         //% v.defl=0
+        //% group="General"
         set(v:number) {
             this.value = v;
-          }
+        }
+
+        //% block="%property update value to %v"
+        //% v.defl=0
+        //% group="General"
+        update(v:number) {
+            this.value = this.value+v;
+        }
         
     }
     export let propertyArray: Property[] = []
         
-        //% block="property to %v"
+        //% block="create property"
         //% v.defl=0
         //% blockSetVariable=property
-        export function create(v:number): Property {
-            let p = new Property(v);
-            p.value = v;
+        //% group="General"
+        export function create(): Property {
+            let p = new Property();
             propertyArray.push(p);
             return p
             }
