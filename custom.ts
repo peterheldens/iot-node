@@ -688,6 +688,7 @@ function addMicrobitOld (sn: number) {
     export function addProperty(p: string, v:number) {
         // add digital twin reported.property
         // add (name, value) pair to array of (propSting, propValue)
+        // https://stackoverflow.com/questions/1750106/how-can-i-use-pointers-in-java
         const index = propString.indexOf(p)
         if ( index < 0) {
             // we have a new value pair
@@ -701,6 +702,9 @@ function addMicrobitOld (sn: number) {
             propValue[index] = v
         }    
     }
+    // TODO - pseudo code
+    // for each object in property array
+    // submit object.value
 
     function leafSendProperty () {
         // send device property value pairs to the cloud
