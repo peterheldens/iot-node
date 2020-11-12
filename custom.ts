@@ -84,7 +84,8 @@ namespace IoT {
     export let propertyArray: Property[] = []
         
         //% block="create property|name %name|value %value"
-        //% v.defl=0
+        //% value.defl=0
+        //% value.defl=counter
         //% blockSetVariable=property
         //% group="General"
         export function create(name:string, value: number): Property {
@@ -300,7 +301,7 @@ namespace IoT {
                 for (let i=0; i<propertyArray.length;i++) { 
                     const n=propertyArray[i].name
                     const v=propertyArray[i].value
-                    gatewaySendProperty(sn,n, v)
+                    gatewaySendProperty(sn,n,v)
                 }   
                 gatewaySendProperty(sn,"eom", 1)
             }
