@@ -1,5 +1,5 @@
 /**
- * Author: Peter Heldens, 19-Nov 2020
+ * Author: Peter Heldens, 25- okt 2020
  * 
  * NodeRed Extension to experiment with:
  * - Azure IoT Digital Twins
@@ -45,36 +45,6 @@
 enum Mode {
     EndPoint,
     Gateway
-}
-
-/**
- * Events are functions that take a function (lambda) as the last argument
- */
-enum Commands {
-    //% block=None
-    None = 0,
-    //% block=Who
-    Who = 1,
-    //% block=Clear
-    Clear = 2,
-    //% block=RGB
-    RGB = 3,
-    //% block=Color
-    Color = 4,
-    //% block=Icon
-    Icon = 5,
-    //% block=Reset
-    Reset = 6,
-    //% block=Brightness
-    Brightness = 7,
-    //% block=Servo
-    Servo = 8,
-    //% block=DigitalWrite
-    DigitalWrite = 9,
-    //% block=AnalogWrite
-    AnalogWrite = 10,
-    //% block=Text
-    Text = 11
 }
 
 //% groups="['Gateway','EndPoint','General','Advanced"]"
@@ -137,6 +107,11 @@ namespace IoT {
     const init_property     = "{\"topic\":\"property\"}"
     const init_log          = "{\"topic\":\"device_log\"}"
 
+/* experiment
+    const init_telemetry    = "{\"topic\":\"telemetry\", \"payload\":{"
+    const init_property     = "{\"topic\":\"property\", \"payload\":{"
+    const init_log          = "{\"topic\":\"device_log\", \"payload\":{"
+*/
     let device_telemetry    : string[] = []
     let device_property     : string[] = []
     let device_log          : string[] = []
@@ -154,17 +129,6 @@ namespace IoT {
     let microbit_ID = 0 // this is the index of the EndPoint to be processed using the HandShake
     let delay = 20
     let activeRadioRequest = false
-
-    const CMDEVENTID = 3100;
-    let LASTCMD : Commands
-    let CMD : Commands = Commands.None
-    let P1 : number = 0
-    let P2 : number = 0
-    let P3 : number = 0
-    let S1 : string = ""
-    let S2 : string = ""
-    let S3 : string = ""
-
 
     //init Radio
     radio.setTransmitPower(7)
@@ -231,26 +195,6 @@ namespace IoT {
             request_next_mb()
             }
         }
-    }
-
-    /**
-     * A C2D event taking a function handler
-     */
-    //% block="C2D command $cmd"
-    //% draggableParameters="reporter"
-    export function onEvent(cmd:Commands, phandler:() => void) {
-        control.onEvent(CMDEVENTID, cmd, phandler);
-        control.inBackground(() => {
-            while(true) {
-                const cmd = CMD; //get external input here
-                if (cmd!=LASTCMD) {
-                   LASTCMD = CMD; 
-                    control.raiseEvent(CMDEVENTID,LASTCMD);
-                    CMD=Commands.None
-                }
-                basic.pause(50);
-            }
-        })
     }
 
     function radioSendMessage(m: string) {
@@ -580,9 +524,11 @@ function addMicrobitOld (sn: number) {
                 } else if (name == "eom") {
                     gatewaySendTelemetry(sn, "eom", value)
                     gatewaySendProperty(sn, "eom", value) // TODO: klopt dit wel?
+                    //gatewaySendLog(sn, "eom", value)
                     activeRadioRequest = false
                 } else if (name.substr(0, 2) == "d:") {
                     // debug/log data
+                    //gatewaySendLog(sn, name.substr(2,name.length), value)
                 } else {
                     // property data
                     gatewaySendProperty(sn, name, value)
@@ -629,6 +575,69 @@ function addMicrobitOld (sn: number) {
                 JSON = init_property
             } 
             device_property[microbit_ID] = JSON
+        }
+    }
+
+    function gatewaySendLog (sn: number, text: string, num: number) {
+        // assemble data object and send as JSON String to ComPort
+        if (deviceMode==Mode.Gateway) {
+            microbit_ID = device_registrar.indexOf(sn)
+            debug("ID="+microbit_ID+" sn="+sn+" log("+text+","+num+")")
+            let JSON = device_log[microbit_ID]
+            if (JSON.includes("}")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + ","
+            }
+            if (true) {
+                JSON = "" + JSON + "\"" + text + "\"" + ":" + num + "}"
+            } else {
+                debug("skipped: " + text + ":" + num)
+            }
+            if (JSON.includes("eom")) {
+                debug("eom log")
+                led.plot(device_registrar.indexOf(sn), 4)
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                //serial.writeLine("")
+                //basic.pause(delay)
+                led.unplot(device_registrar.indexOf(sn), 4)
+                JSON = init_log
+            }
+            device_log[microbit_ID] = JSON
+        }
+    }
+
+        function gatewaySendTelemetryExperiment (sn: number, text: string, num: number) {
+        // assemble data object and send as JSON String to ComPort
+        if (deviceMode==Mode.Gateway) {
+            //microbit_ID = device_registrar.indexOf(sn)
+            //debug("ID="+microbit_ID+" telemetry("+text+","+num+")")
+            let JSON=""
+            JSON = device_telemetry[microbit_ID]
+            /*
+            if (JSON.includes("}")) {
+                JSON = JSON.substr(0, JSON.length - 1)
+                JSON = "" + JSON + ","
+            }
+            */
+            if (JSON.includes("id") || text == "id") {
+                JSON = "" + JSON + "\"" + text + "\"" + ":" + num + ","
+            } else {
+                debug("skipped: " + text + ":" + num)
+            }
+            if (JSON.includes("eom")) {
+                JSON = JSON.substr(0, JSON.length - 9) // 9=length of ,"eom":1,
+                JSON = "" + JSON + "}}"
+                //debug("eom telemetry")
+                led.plot(device_registrar.indexOf(sn), 4)
+                serial.writeLine(JSON)
+                basic.pause(delay)
+                //serial.writeLine("")
+                //basic.pause(delay)
+                led.unplot(device_registrar.indexOf(sn), 4)
+                JSON = init_telemetry
+            }
+            device_telemetry[microbit_ID] = JSON
         }
     }
 
@@ -1022,6 +1031,14 @@ function addMicrobitOld (sn: number) {
     // doCommands is a global variable for HandShakeset in radio.onReceivedString(function (receivedString))
     let doCommands = true //TODO: Stond op false, waarschijnlijk voor leaf
 
+    // define NeoPixel Strip
+    /*
+    let strip: neopixel.Strip = null
+    strip = neopixel.create(DigitalPin.P1, 10, NeoPixelMode.RGB)
+    strip.clear()
+    strip.show()
+    */
+
     function processC2D (s:string) {
         // process cloud commands
         if (!(s.isEmpty())) {
@@ -1056,66 +1073,124 @@ function addMicrobitOld (sn: number) {
         }
     }
 
-     function invokeCommands (cmd:string, p1:string, p2:string, p3:string) {
-        S1=p1
-        S2=p1
-        S3=p3
-        P1=parseFloat(p1)
-        P2=parseFloat(p2)
-        P3=parseFloat(p3)
+ 
+    function invokeCommands (cmd:string, p1:string, p2:string, p3:string) {
+        if (true) { //TODO hier stond if doCommands .....
+            // run this once and wait for new HandShake from Leaf Device
+            // doCommands is set in radio.onReceivedString(function (receivedString))
+            doCommands = false
+            if (cmd == "sid") {
+                setIdentity(parseFloat(p1), parseFloat(p2))
+            } 
+            else if (cmd == "who") {
+                who()
+            }
+            else if (cmd == "clear") {
+                clear()
+            }
+            else if (cmd == "rgb") {
+                setRGB(parseFloat(p1), parseFloat(p2), parseFloat(p3))
+            }
+            else if (cmd == "color") {
+                setColor(p1)
+            }
+            else if (cmd == "icon") {
+                setIcon(p1)
+            }
+            else if (cmd == "reset") {
+                setReset()
+            }
+            else if (cmd == "brightness") {
+                setBrightness(parseFloat(p1))
+            }
+            else if (cmd == "servo") {
+                setServo(parseFloat(p1))
+            }
+            else if (cmd == "digitalWrite") {
+                setDigitalPin(parseFloat(p1), parseFloat(p2))
+            }
+            else if (cmd == "analogWrite") {
+                setAnalogPin(parseFloat(p1), parseFloat(p2))
+            } 
+            else {
+                setText(cmd,p1,p2,p3)
+            } 
+            //TODO reportedproperties = multiple parameters, first check this one.
+            //addProperty(cmd, parseFloat(p1))
+        }
+    }
 
-        switch (cmd) {
-            case "who": {
-                CMD=Commands.Servo
-                break;
-            }
-            case "clear": {
-                CMD=Commands.Clear
-                break;
-            }
-            case "rgb" :{
-                CMD=Commands.RGB
-                break;
-            }
-            case "color" :{
-                CMD=Commands.Color
-                break;
-            }
-            case "icon": {
-                CMD=Commands.Icon
-                break;
-            }
-            case "reset": {
-                CMD=Commands.Reset
-                break;
-            }
-            case "brightness" :{
-                CMD=Commands.Brightness
-                break;
-            }
-            case "servo" :{
-                CMD=Commands.Servo
-                break;
-            }
-            case "digitalwrite": {
-                CMD=Commands.DigitalWrite
-                break;
-            }
-            case "analogwrite" :{
-                CMD=Commands.AnalogWrite
-                break;
-            }
-            case "text" :{
-                CMD=Commands.Text
-                break;
+    function setAnalogPin (pin: number, value: number) {
+        basic.showString("a")
+        if (pin == 0) {
+            pins.analogWritePin(AnalogPin.P0, value)
+        }
+        if (pin == 1) {
+            pins.analogWritePin(AnalogPin.P1, value)
+        }
+        if (pin == 2) {
+            pins.analogWritePin(AnalogPin.P2, value)
+        }
+    }
+
+    function setDigitalPin (pin: number, value: number) {
+        basic.showString("d")
+        if (pin == 0) {
+            pins.digitalWritePin(DigitalPin.P0, value)
+        }
+        if (pin == 1) {
+            pins.digitalWritePin(DigitalPin.P1, value)
+        }
+        if (pin == 2) {
+            pins.digitalWritePin(DigitalPin.P2, value)
+        }
+    }
+
+    function setReset () {
+        basic.showString("reset")
+        control.reset()
+    }
+
+   function setIcon (name: string) {
+        // show icon
+        if (name == "heart") {
+            basic.showIcon(IconNames.Heart)
+        } else if (name == "happy") {
+            basic.showIcon(IconNames.Happy)
+        } else if (name == "cls") {
+            basic.clearScreen()
+        } else if (name == "sad") {
+            basic.showIcon(IconNames.Sad)
+        } else if (name == "random") {
+            const iconnumber = randint(0, 2)
+            basic.clearScreen()
+            basic.pause(500)
+            if (iconnumber == 0) {
+                basic.showIcon(IconNames.Chessboard)
+            } else if (iconnumber == 1) {
+                basic.showIcon(IconNames.Square)
+            } else if (iconnumber == 2) {
+                basic.showIcon(IconNames.Scissors)
             }
         }
     }
 
-    function who() {
-        basic.showNumber(identity)
+    function setServo (value: number) {
+        basic.showString("s")
+        pins.servoWritePin(AnalogPin.P0, value)
+        basic.pause(1000)
+        basic.clearScreen()
     }
-    
+
+    function setRGB (r: number, g: number, b: number) {
+        /*
+        basic.showString("r")
+        strip.showColor(neopixel.rgb(r, g, b))
+        basic.pause(1000)
+        basic.clearScreen()
+        */
+    }
+
     function setIdentity (i: number, v: number) {
         if (v == control.deviceSerialNumber()) {
             identity = i
@@ -1123,7 +1198,72 @@ function addMicrobitOld (sn: number) {
         }
     }
 
-   
+    function setText (text: string,p1:string, p2:string,p3:string) {
+        let s=text;
+        if (p1!=undefined) {
+            s=s+"("+p1
+        }
+        if (p2!=undefined) {
+            s=s+","+p2
+        }
+        if (p3!=undefined) {
+            s=s+","+p3
+        }
+        if (p1!=undefined) {
+            s=s+")"
+        }
+        basic.showString(s)
+    }
+
+    function clear () {
+        basic.clearScreen()
+    }
+
+    function setBrightness (value: number) {
+        /*
+        strip.setBrightness(value)
+        strip.showRainbow(1, 360)
+        strip.show()
+        */
+    }
+
+    function who () {
+        basic.showNumber(identity)
+    }
+
+    function setColor (color: string) {
+        basic.showString("c")
+        /*
+        if (color == "red") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Red))
+        } else if (color == "orange") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Orange))
+        } else if (color == "yellow") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Yellow))
+        } else if (color == "green") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Green))
+        } else if (color == "blue") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Blue))
+        } else if (color == "indigo") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Indigo))
+        } else if (color == "violet") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Violet))
+        } else if (color == "purple") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Purple))
+        } else if (color == "white") {
+            strip.showColor(neopixel.colors(NeoPixelColors.White))
+        } else if (color == "black") {
+            strip.showColor(neopixel.colors(NeoPixelColors.Black))
+        } else if (color == "clear") {
+            strip.clear()
+        } else if (color == "rainbow") {
+            strip.showRainbow(1, 360)
+        }
+        strip.show()
+        //TODO reportedproperties = "\"" + color + "\""
+        */
+    }
+
     /////////////////////
     // End IoT Commands
     /////////////////////
