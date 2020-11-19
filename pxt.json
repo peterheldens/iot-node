@@ -1,5 +1,5 @@
 {
-    "name": "iot node",
+    "name": "iot node event",
     "description": "",
     "dependencies": {
         "core": "*",
